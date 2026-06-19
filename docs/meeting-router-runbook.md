@@ -88,6 +88,9 @@ contact + `flowType`) to each sub-workflow.
   relations, and a page body holding the classification callout + summary + transcript link.
 - **Idempotency:** keyed on a `Fireflies ID` rich-text column. `Check External Meeting Exists`
   queries it before creating; duplicates are skipped.
+- The **internal** meeting path dedups identically: `Check Existing Meeting` keys on `Fireflies
+  ID` and runs at the **front** of the internal path (before `Log to Fireflies DB`), so a
+  re-seen internal meeting writes nothing to the Meetings DB or the raw Fireflies log.
 
 ## Notion data model
 
@@ -126,3 +129,9 @@ to a DM *channel* ID failed with `channel_not_found`).
   poll is processed (not just the latest). Fixed the Slack notify to DM by user ID. Confirmed
   live: two same-window vendor calls (Scytale, Rippling) both classified VENDOR, recorded,
   deduped, and Slack-notified.
+- **June 2026 — internal dedup fix (the duplicate-records fix).** Moved `Check Existing Meeting`
+  to the **front** of the internal-meeting path and keyed it on `Fireflies ID` — it had matched
+  the bare title, which never matched the emoji-prefixed records, producing a fresh `🤝 Team
+  Sync` (etc.) every poll. Repointed `Log to Fireflies DB` to `$('Classify Internal Meeting')`
+  so it works behind the front gate. A re-seen internal meeting now writes nothing — Meetings DB
+  *or* raw Fireflies log. Verified live.

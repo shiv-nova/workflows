@@ -517,12 +517,12 @@
           "cachedResultName": "Fred’s Fireflies Meetings",
           "cachedResultUrl": "https://app.notion.com/p/3797228db80e81f2ac10c73aa10a7b72"
         },
-        "title": "={{ $json.meetingTitle }}",
+        "title": "={{ $('Classify Internal Meeting').first().json.meetingTitle }}",
         "propertiesUi": {
           "propertyValues": [
             {
               "key": "Date|date",
-              "date": "={{ $json.meetingDate }}"
+              "date": "={{ $('Classify Internal Meeting').first().json.meetingDate }}"
             },
             {
               "key": "Multi-select|multi_select",
@@ -532,28 +532,28 @@
             },
             {
               "key": "Type|rich_text",
-              "textContent": "={{ $json.internalMeetingCategory }}"
+              "textContent": "={{ $('Classify Internal Meeting').first().json.internalMeetingCategory }}"
             },
             {
               "key": "Overview|rich_text",
-              "textContent": "={{ $json.overview }}"
+              "textContent": "={{ $('Classify Internal Meeting').first().json.overview }}"
             },
             {
               "key": "Gist|rich_text",
-              "textContent": "={{ $json.gist }}"
+              "textContent": "={{ $('Classify Internal Meeting').first().json.gist }}"
             },
             {
               "key": "Action Items|rich_text",
-              "textContent": "={{ $json.actionItemsFormatted }}"
+              "textContent": "={{ $('Classify Internal Meeting').first().json.actionItemsFormatted }}"
             },
             {
               "key": "New Summary|rich_text",
-              "textContent": "={{ $json.newSummary }}"
+              "textContent": "={{ $('Classify Internal Meeting').first().json.newSummary }}"
             },
             {
               "key": "Transcript|url",
               "ignoreIfEmpty": true,
-              "urlValue": "={{ $json.transcriptUrl }}"
+              "urlValue": "={{ $('Classify Internal Meeting').first().json.transcriptUrl }}"
             }
           ]
         },
@@ -788,7 +788,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ (() => {\n  const r = $('Restore Meeting Data').first().json;\n  const c = $('Classify Internal Meeting').first().json;\n  const attendeeIds = c.attendeeNotionIds || [];\n  const EMOJI = {\n    '1:1': '👥',\n    'Standup': '⚡',\n    'All-hands': '🏢',\n    'Retrospective': '🔄',\n    'Interview': '🎤',\n    'Board': '📊',\n    'Strategy': '🎯',\n    'Training': '📚',\n    'Team sync': '🤝',\n    'Internal': '📝',\n  };\n  const cat = r.internalMeetingCategory || 'Internal';\n  const emoji = EMOJI[cat] || '📝';\n  return {\n    \"parent\": { \"database_id\": \"be0a73a826854e5c827e15ba07dd315c\" },\n    \"properties\": {\n      \"Title\": { \"title\": [{ \"text\": { \"content\": emoji + ' ' + (r.meetingTitle || '(untitled)') } }] },\n      \"Date\": { \"date\": { \"start\": r.meetingDate } },\n      \"Type\": { \"select\": { \"name\": cat } },\n      \"Attendees\": { \"people\": attendeeIds.map(id => ({ \"object\": \"user\", \"id\": id })) }\n    }\n  };\n})() }}",
+        "jsonBody": "={{ (() => {\n  const r = $('Restore Meeting Data').first().json;\n  const c = $('Classify Internal Meeting').first().json;\n  const attendeeIds = c.attendeeNotionIds || [];\n  const EMOJI = {\n    '1:1': '👥',\n    'Standup': '⚡',\n    'All-hands': '🏢',\n    'Retrospective': '🔄',\n    'Interview': '🎤',\n    'Board': '📊',\n    'Strategy': '🎯',\n    'Training': '📚',\n    'Team sync': '🤝',\n    'Internal': '📝',\n  };\n  const cat = r.internalMeetingCategory || 'Internal';\n  const emoji = EMOJI[cat] || '📝';\n  return {\n    \"parent\": { \"database_id\": \"be0a73a826854e5c827e15ba07dd315c\" },\n    \"properties\": {\n      \"Title\": { \"title\": [{ \"text\": { \"content\": emoji + ' ' + (r.meetingTitle || '(untitled)') } }] },\n      \"Date\": { \"date\": { \"start\": r.meetingDate } },\n      \"Type\": { \"select\": { \"name\": cat } },\n      \"Fireflies ID\": { \"rich_text\": [{ \"text\": { \"content\": String(c.meetingId || '') } }] },\n      \"Attendees\": { \"people\": attendeeIds.map(id => ({ \"object\": \"user\", \"id\": id })) }\n    }\n  };\n})() }}",
         "options": {}
       },
       "id": "69cb63b3-4047-44ee-9248-d623f5632ad7",
@@ -817,7 +817,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"filter\": { \"property\": \"Title\", \"title\": { \"equals\": $('Restore Meeting Data').first().json.meetingTitle || \"\" } } } }}",
+        "jsonBody": "={{ { \"filter\": { \"property\": \"Fireflies ID\", \"rich_text\": { \"equals\": ($('Classify Internal Meeting').first().json.meetingId || \"___none___\") } }, \"page_size\": 1 } }}",
         "options": {}
       },
       "id": "f5be405a-9a8a-4303-a4b3-4e188c206cdc",
@@ -1549,17 +1549,6 @@
         ]
       ]
     },
-    "Classify Internal Meeting": {
-      "main": [
-        [
-          {
-            "node": "Log to Fireflies DB",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Create Contact in Notion": {
       "main": [
         [
@@ -1659,17 +1648,6 @@
         ]
       ]
     },
-    "Restore Meeting Data": {
-      "main": [
-        [
-          {
-            "node": "Check Existing Meeting",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Check Existing Meeting": {
       "main": [
         [
@@ -1714,7 +1692,7 @@
         ],
         [
           {
-            "node": "Rewrite Action Items",
+            "node": "Log to Fireflies DB",
             "type": "main",
             "index": 0
           }
@@ -2042,6 +2020,28 @@
         [
           {
             "node": "Loop Continue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Internal Meeting": {
+      "main": [
+        [
+          {
+            "node": "Check Existing Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Meeting Data": {
+      "main": [
+        [
+          {
+            "node": "Rewrite Action Items",
             "type": "main",
             "index": 0
           }
