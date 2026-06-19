@@ -1,0 +1,38 @@
+{
+  "name": "Deck Generator — Error Alerts",
+  "nodes": [
+    {
+      "id": "8f16bdca-032f-46cd-badb-aa1ddcc4ee9e",
+      "name": "On Workflow Error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "id": "a6d3a437-6ee8-4541-af6e-44538824dcb5",
+      "name": "DM Shiv",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [224, 0],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "message",
+        "operation": "post",
+        "select": "user",
+        "user": { "__rl": true, "mode": "id", "value": "U0B29K2JFEK" },
+        "messageType": "text",
+        "text": "=:rotating_light: *n8n workflow error*\n\n*Workflow:* {{ $json.workflow.name }}\n*Failed node:* {{ $json.execution.lastNodeExecuted }}\n*Error:* {{ $json.execution.error.message }}\n*Execution:* {{ $json.execution.url }}",
+        "otherOptions": { "includeLinkToWorkflow": true }
+      },
+      "webhookId": "281ac54d-82b3-4541-8be3-a0835c049182"
+    }
+  ],
+  "connections": {
+    "On Workflow Error": {
+      "main": [[{ "node": "DM Shiv", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1", "availableInMCP": true },
+  "meta": { "aiBuilderAssisted": true, "builderVariant": "mcp" },
+  "description": "Catch-all error handler: DMs Shiv on Slack whenever a linked workflow (Deck Generator / Batch Runner) fails, with workflow name, failed node, error message, and execution link."
+}

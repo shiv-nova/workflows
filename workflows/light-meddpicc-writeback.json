@@ -1,0 +1,103 @@
+{
+  "name": "LIGHT: MEDDPICC Writeback",
+  "nodes": [
+    {
+      "id": "6780dbdb-66a5-43e1-acc5-6d2558d1fb3e",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 304],
+      "parameters": { "inputSource": "passthrough" }
+    },
+    {
+      "id": "a4fa8886-bf39-41f1-ab60-4c9c26374e4a",
+      "name": "Extract MEDDPICC with Claude",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [496, 304],
+      "parameters": {
+        "promptType": "define",
+        "text": "=Meeting: {{ $json.meetingTitle }}\nDate: {{ $json.meetingDate }}\nDuration: {{ $json.duration }} minutes\nContact: {{ $json.contactName }} ({{ $json.contactRole }}) at {{ $json.companyName }}\nIndustry: {{ $json.companyIndustry }}\nDeal stage: {{ $json.dealStage }}\n\nMeeting summary: {{ $json.lastCallSummary }}\nGist: {{ $json.gist }}\nTopics discussed: {{ $json.topicsDiscussed.join(', ') }}\nAction items: {{ $json.actionItems.join('\\n') }}\n\nExtract and return valid JSON with exactly these keys:\n{\n  \"identifyPain\": \"business problem or pain points mentioned (empty string if none)\",\n  \"metrics\": \"quantifiable outcomes, KPIs, ROI figures mentioned (empty string if none)\",\n  \"decisionCriteria\": \"criteria they will use to evaluate solutions (empty string if none)\",\n  \"decisionProcess\": \"their buying/approval/decision process steps (empty string if none)\",\n  \"economicBuyer\": \"name/role of person with budget authority if mentioned (empty string if unknown)\",\n  \"champion\": \"internal advocate or sponsor name if mentioned (empty string if unknown)\",\n  \"nextStep\": \"agreed next action from the meeting (empty string if none)\",\n  \"confidenceFlags\": [\"Budget unconfirmed\", \"Authority unconfirmed\", \"Timeline vague\", \"Champion weak\", \"Competition unknown\"]\n}\nReturn only valid JSON, no explanation.",
+        "messages": {
+          "messageValues": [
+            { "message": "You are a sales intelligence assistant for Novagentica, an AI automation consultancy. Extract MEDDPICC qualification data from meeting information." }
+          ]
+        },
+        "batching": {}
+      }
+    },
+    {
+      "id": "7e1086c3-6fdf-4fb4-b828-ebe5c8c83432",
+      "name": "Claude claude-opus-4-8",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [496, 528],
+      "parameters": {
+        "model": { "__rl": true, "mode": "id", "value": "claude-opus-4-8", "cachedResultName": "Claude Opus 4.8" },
+        "options": { "maxTokensToSample": 2048, "temperature": 0.3 }
+      }
+    },
+    {
+      "id": "fd4497cb-4fd1-4a86-8766-97486066ef57",
+      "name": "Parse MEDDPICC JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [752, 304],
+      "parameters": {
+        "jsCode": "\nconst triggerData = $('Execute Workflow Trigger').first().json;\nconst llmOutput = $input.first().json;\n\n// Try to extract JSON from the LLM response\nlet rawText = llmOutput.text || llmOutput.response || llmOutput.output || '';\n\n// Strip markdown code fences if present\nrawText = rawText.replace(/^```json\\s*/i, '').replace(/```\\s*$/i, '').trim();\n\nlet parsed = {};\ntry {\n  parsed = JSON.parse(rawText);\n} catch (e) {\n  parsed = {\n    identifyPain: '',\n    metrics: '',\n    decisionCriteria: '',\n    decisionProcess: '',\n    economicBuyer: '',\n    champion: '',\n    nextStep: '',\n    confidenceFlags: ['Budget unconfirmed', 'Authority unconfirmed', 'Timeline vague', 'Champion weak', 'Competition unknown']\n  };\n}\n\nreturn [{\n  json: {\n    identifyPain: parsed.identifyPain || '',\n    metrics: parsed.metrics || '',\n    decisionCriteria: parsed.decisionCriteria || '',\n    decisionProcess: parsed.decisionProcess || '',\n    economicBuyer: parsed.economicBuyer || '',\n    champion: parsed.champion || '',\n    nextStep: parsed.nextStep || '',\n    confidenceFlags: Array.isArray(parsed.confidenceFlags) ? parsed.confidenceFlags : [],\n    meetingDate: triggerData.meetingDate || '',\n    transcriptUrl: triggerData.transcriptUrl || '',\n    lastCallSummary: triggerData.lastCallSummary || '',\n    dealId: triggerData.dealId || '',\n    dealName: triggerData.dealName || '',\n    contactName: triggerData.contactName || '',\n    slackChannelId: triggerData.slackChannelId || ''\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "05ca7d82-d550-44c4-b376-ecd848246c88",
+      "name": "Update Deal MEDDPICC in Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [992, 304],
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $json.dealId }}" },
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Identify Pain|rich_text", "type": "rich_text", "textContent": "={{ $json.identifyPain }}" },
+            { "key": "Metrics|rich_text", "type": "rich_text", "textContent": "={{ $json.metrics }}" },
+            { "key": "Decision Criteria|rich_text", "type": "rich_text", "textContent": "={{ $json.decisionCriteria }}" },
+            { "key": "Decision Process|rich_text", "type": "rich_text", "textContent": "={{ $json.decisionProcess }}" },
+            { "key": "Economic Buyer|rich_text", "type": "rich_text", "textContent": "={{ $json.economicBuyer }}" },
+            { "key": "Champion|rich_text", "type": "rich_text", "textContent": "={{ $json.champion }}" },
+            { "key": "Next Step|rich_text", "type": "rich_text", "textContent": "={{ $json.nextStep }}" },
+            { "key": "Last Call Summary|rich_text", "type": "rich_text", "textContent": "={{ $json.lastCallSummary }}" },
+            { "key": "Last Call Date|date", "type": "date", "includeTime": false, "date": "={{ $json.meetingDate }}" },
+            { "key": "Meeting Transcript URL|url", "type": "url", "ignoreIfEmpty": true, "urlValue": "={{ $json.transcriptUrl }}" },
+            { "key": "Agent Confidence Flags|multi_select", "type": "multi_select", "multiSelectValue": ["Budget unconfirmed", "Authority unconfirmed", "Timeline vague", "Champion weak", "Competition unknown"] }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "537ba1ad-93a0-4027-8b46-8a0b425dbc15",
+      "name": "Send Slack MEDDPICC Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [1504, 208],
+      "parameters": {
+        "select": "channel",
+        "channelId": { "__rl": true, "mode": "id", "value": "={{ $('Parse MEDDPICC JSON').first().json.slackChannelId || 'D0B3KBGM2CQ' }}" },
+        "text": "=✅ MEDDPICC updated for *{{ $json.dealName }}* after call with {{ $json.contactName }}.\n*Next step:* {{ $json.nextStep }}\n*Confidence flags:* {{ $json.confidenceFlags.join(', ') || 'None' }}\n<{{ $json.transcriptUrl }}|View transcript>",
+        "otherOptions": { "includeLinkToWorkflow": false, "mrkdwn": true }
+      },
+      "webhookId": "37803427-c8a1-44c8-a030-8d05d3d51ff4"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": { "main": [[{ "node": "Extract MEDDPICC with Claude", "type": "main", "index": 0 }]] },
+    "Extract MEDDPICC with Claude": { "main": [[{ "node": "Parse MEDDPICC JSON", "type": "main", "index": 0 }]] },
+    "Claude claude-opus-4-8": { "ai_languageModel": [[{ "node": "Extract MEDDPICC with Claude", "type": "ai_languageModel", "index": 0 }]] },
+    "Parse MEDDPICC JSON": { "main": [[{ "node": "Update Deal MEDDPICC in Notion", "type": "main", "index": 0 }]] },
+    "Update Deal MEDDPICC in Notion": { "main": [[{ "node": "Send Slack MEDDPICC Notification", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "availableInMCP": true, "binaryMode": "separate" },
+  "meta": { "aiBuilderAssisted": true, "builderVariant": "mcp", "templateCredsSetupCompleted": true },
+  "description": "Called by Meeting Router for Strategic Conversation deals. Analyzes the meeting transcript with Claude (claude-opus-4-8) to extract MEDDPICC qualification data and writes it back to the Deals DB in Notion, then sends a Slack summary notification."
+}

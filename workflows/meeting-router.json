@@ -1,0 +1,1921 @@
+{
+  "name": "Meeting Router",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fireflies.ai/graphql",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"query\": \"{ transcript(id: \\\"\" + $json.id + \"\\\") { id title organizer_email participants summary { overview action_items gist meeting_type topics_discussed } transcript_url duration dateString speakers { id name } } }\" } }}",
+        "options": {}
+      },
+      "id": "685edc13-8d77-4283-b1c8-69ccbd2e61aa",
+      "name": "Fetch Fireflies Transcript",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        528,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const INTERNAL_DOMAINS = ['novagentica.ai', 'novagentica.com'];\nconst t = $input.first().json.data.transcript;\n\nfunction extractEmail(raw) {\n  if (!raw) return null;\n  const s = (typeof raw === 'object') ? (raw.email || raw.Email || '') : String(raw);\n  const angleMatch = s.match(/<([^>]+@[^>]+)>/);\n  return (angleMatch ? angleMatch[1] : s).trim().toLowerCase();\n}\n\nconst rawParticipants = [...(t.participants || []), t.organizer_email].filter(Boolean);\nconst flatParticipants = rawParticipants.flatMap(p =>\n  typeof p === 'string' ? p.split(',').map(e => e.trim()) : [p]\n);\nconst allEmails = [...new Set(flatParticipants.map(extractEmail).filter(e => e && e.includes('@')))];\n\nconst externalEmails = allEmails.filter(e => {\n  const domain = e.split('@')[1];\n  return domain && !INTERNAL_DOMAINS.includes(domain);\n});\n\nconst SALES = ['sales','discovery','demo','follow-up','presentation','review','pitch','proposal'];\nconst mt = (t.summary?.meeting_type || '').toLowerCase();\nconst isSalesMeetingType = SALES.some(s => mt.includes(s)) || mt === 'unknown' || mt === '';\n\nconst organizerEmail = extractEmail(t.organizer_email) || allEmails[0] || '';\n\nreturn [{ json: {\n  meetingId: t.id, meetingTitle: t.title,\n  meetingType: t.summary?.meeting_type || 'unknown', isSalesMeetingType,\n  transcriptUrl: t.transcript_url, lastCallSummary: t.summary?.overview || '',\n  actionItems: t.summary?.action_items || [], gist: t.summary?.gist || '',\n  topicsDiscussed: t.summary?.topics_discussed || [], meetingDate: t.dateString,\n  duration: t.duration, externalEmails, primaryExternalEmail: externalEmails[0] || null,\n  hasExternalAttendees: externalEmails.length > 0,\n  allEmails, organizerEmail,\n}}];"
+      },
+      "id": "b2114368-f356-4449-8c65-e887e75d3643",
+      "name": "Extract External Attendees",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasExternalAttendees }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "id": "f5872902-424c-44be-9600-0c8b40afe7cd"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d17e8a62-93da-44e2-b6d1-f551fded02b5",
+      "name": "Has External Attendees?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "b8e23af0-9320-4d0b-95f4-2516be716df4",
+          "mode": "list",
+          "cachedResultName": "👥 Contacts",
+          "cachedResultUrl": "https://app.notion.com/p/b8e23af093204d0b95f42516be716df4"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Email|email",
+              "condition": "equals",
+              "emailValue": "={{ $json.primaryExternalEmail }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b9199497-6480-448e-b4ec-5c3c9a0a6851",
+      "name": "Lookup Contact by Email",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        416
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6962913f-6681-43d8-afbb-25064ee1db76",
+      "name": "Contact Found in CRM?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const contact = $input.first().json;\nconst companyField = contact.Company;\nconst companyRelationId = Array.isArray(companyField)\n  ? (typeof companyField[0] === 'string' ? companyField[0] : (companyField[0]?.id || null))\n  : null;\nreturn [{json:{\n  contactId: contact.id, contactName: contact.Name || '',\n  contactEmail: contact.Email || '', contactRole: contact.Role || '',\n  companyRelationId,\n}}];"
+      },
+      "id": "661dd4b1-e168-43d2-aee3-dec026336792",
+      "name": "Extract Contact Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = ($json.results || [])[0];\nif (!result) {\n  return [{json:{ isCustomer: false, isSupplier: false, reason: 'company_not_found', companyId: null, companyName: null, companyIndustry: null, companyType: '', gDriveFolderUrl: null, slackChannelId: null, companyStatus: '' }}];\n}\nconst props = result.properties || {};\nconst get = (prop) => {\n  if (!prop) return '';\n  if (prop.type === 'title') return (prop.title || []).map(t => t.plain_text).join('');\n  if (prop.type === 'rich_text') return (prop.rich_text || []).map(t => t.plain_text).join('');\n  if (prop.type === 'select') return prop.select?.name || '';\n  if (prop.type === 'multi_select') return (prop.multi_select || []).map(s => s.name).join(',');\n  if (prop.type === 'url') return prop.url || '';\n  return '';\n};\nconst typeStr = get(props['Type']);\nconst isCustomer = typeStr.includes('Client') || typeStr.includes('Prospect');\nconst isSupplier = typeStr.includes('Vendor') || typeStr.includes('Investor') || typeStr.includes('Partner');\nreturn [{json:{\n  isCustomer, isSupplier,\n  reason: isCustomer ? 'customer' : isSupplier ? 'supplier' : 'non_customer_type',\n  companyId: result.id,\n  companyName: get(props['Name']),\n  companyIndustry: get(props['Industry']),\n  companyType: typeStr,\n  gDriveFolderUrl: get(props['GDrive Folder URL']),\n  slackChannelId: get(props['Slack Channel ID']),\n  companyStatus: get(props['Status']),\n}}];"
+      },
+      "id": "29ba5e1c-cc7d-4e58-b7b7-6e17c73c2ad3",
+      "name": "Classify Company Type",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "684b3c1e-f30e-4a67-99ea-03a32283f7d2"
+        },
+        "returnAll": true,
+        "filterType": "json",
+        "filterJson": "={{ JSON.stringify({\"and\":[{\"property\":\"Company\",\"relation\":{\"contains\": $json.companyId}},{\"property\":\"Stage\",\"select\":{\"does_not_equal\":\"Lost\"}}]}) }}",
+        "options": {}
+      },
+      "id": "879640bb-06fa-4a21-ade8-63a9fa051be3",
+      "name": "Get Open Deals",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2464,
+        320
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst STAGE_PRIORITY = {\n  'Solution Validation': 5, 'Qualified Opportunity': 4,\n  'Strategic Conversation': 3, 'Signed / Expansion': 2,\n  'Commercial / Procurement': 1, 'Lead': 0,\n};\nconst validDeals = items.filter(i => i.json.id);\nif (validDeals.length === 0) { return [{json:{ hasDeals: false }}]; }\nvalidDeals.sort((a, b) => (STAGE_PRIORITY[b.json.Stage]||0) - (STAGE_PRIORITY[a.json.Stage]||0));\nconst deal = validDeals[0].json;\nconst meeting = $('Extract External Attendees').first().json;\nconst contact = $('Extract Contact Data').first().json;\nconst company = $('Classify Company Type').first().json;\nreturn [{json:{\n  hasDeals: true,\n  meetingId: meeting.meetingId, meetingTitle: meeting.meetingTitle,\n  meetingType: meeting.meetingType, isSalesMeetingType: meeting.isSalesMeetingType,\n  transcriptUrl: meeting.transcriptUrl, lastCallSummary: meeting.lastCallSummary,\n  actionItems: meeting.actionItems, gist: meeting.gist,\n  topicsDiscussed: meeting.topicsDiscussed, meetingDate: meeting.meetingDate,\n  duration: meeting.duration, externalEmails: meeting.externalEmails,\n  contactId: contact.contactId, contactName: contact.contactName,\n  contactEmail: contact.contactEmail, contactRole: contact.contactRole,\n  companyId: company.companyId, companyName: company.companyName,\n  companyIndustry: company.companyIndustry, gDriveFolderUrl: company.gDriveFolderUrl,\n  slackChannelId: company.slackChannelId,\n  dealId: deal.id, dealName: deal.Name, dealStage: deal.Stage,\n  dealType: deal['Deal Type'], champion: deal.Champion || '',\n  economicBuyer: deal['Economic Buyer'] || '', closeDate: deal['Close Date'] || '',\n}}];"
+      },
+      "id": "9a83dfdc-0050-49b0-b7c6-80098352fd35",
+      "name": "Find Best Deal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasDeals }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "328f5721-898d-46e0-a360-577152ca5763",
+      "name": "Has Open Deals?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2912,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.dealStage }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "Lead"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.dealStage }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "Strategic Conversation"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.dealStage }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "Qualified Opportunity"
+                  },
+                  {
+                    "leftValue": "={{ $json.dealStage }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "Solution Validation"
+                  }
+                ],
+                "combinator": "or"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.dealStage }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "Signed / Expansion"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "skip-commercial"
+        }
+      },
+      "id": "78f2ae46-6e6d-4ffa-a547-9142ce75bb61",
+      "name": "Route by Deal Stage",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2880,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Lead stage — too early for proposal. Workflow stops silently.",
+        "height": 96
+      },
+      "id": "e311996d-c063-4ab6-bde9-0141c791ac02",
+      "name": "Sticky Note 53859655",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ft",
+              "name": "flowType",
+              "value": "LIGHT",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "6163950d-a338-4dca-b0f8-0080a78b62ee",
+      "name": "Set Light Flow Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3488,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ft",
+              "name": "flowType",
+              "value": "FULL",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "9090872a-e374-41eb-909b-f717b0190be4",
+      "name": "Set Full Flow Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3744,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ft",
+              "name": "flowType",
+              "value": "EXPANSION",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "bb06dab2-bc6f-442a-a7bc-0afade92afb5",
+      "name": "Set Expansion Flow Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3456,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Commercial / Procurement stage — deal already in legal. Workflow stops silently.",
+        "height": 80
+      },
+      "id": "b90c1eee-a4d9-410e-9609-ec9693912bda",
+      "name": "Sticky Note 93d9a18f",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2944,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "D0B3KBGM2CQ"
+        },
+        "text": "={{ \"⚠️ *No open deal found* — \" + $(\"Extract External Attendees\").item.json.primaryExternalEmail + \" attended *\" + $(\"Extract External Attendees\").item.json.meetingTitle + \"* but there is no open deal for their company in Notion. Create a deal to enable proposal generation.\" }}",
+        "otherOptions": {}
+      },
+      "id": "e379a580-b96d-4589-bd49-034e74d434b9",
+      "name": "Alert No Open Deal",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        3136,
+        336
+      ],
+      "webhookId": "da7e71af-315c-425e-b692-1b9ba59d82cc"
+    },
+    {
+      "parameters": {
+        "content": "Non-customer company type (Partner / Investor / Vendor). Workflow stops silently.",
+        "height": 112
+      },
+      "id": "a01fd00e-7e97-4cbf-acee-a4cf64e80320",
+      "name": "Sticky Note 5f3438b6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Internal meeting — classifies meeting type and logs to Fireflies DB in Notion."
+      },
+      "id": "7e8922d2-e93e-4ceb-8408-b3d42674b984",
+      "name": "Sticky Note 3826cd91",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        368,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $input.first().json;\nconst title = (t.meetingTitle || '').toLowerCase();\nconst meetingType = (t.meetingType || '').toLowerCase();\nconst duration = t.duration || 0;\nconst actionItemsList = Array.isArray(t.actionItems)\n  ? t.actionItems.join('\\n')\n  : (t.actionItems || '');\n\nlet category;\nif (title.includes('1:1') || title.includes('one on one') || title.includes('one-on-one')) {\n  category = '1:1';\n} else if (title.includes('standup') || title.includes('stand-up') || (title.includes('daily') && duration <= 20)) {\n  category = 'Standup';\n} else if (title.includes('all hands') || title.includes('all-hands') || title.includes('allhands')) {\n  category = 'All-hands';\n} else if (title.includes('retro') || title.includes('retrospective')) {\n  category = 'Retrospective';\n} else if (title.includes('interview')) { category = 'Interview';\n} else if (title.includes('board')) { category = 'Board';\n} else if (title.includes('strategy') || title.includes('planning') || title.includes('roadmap') || title.includes('okr')) {\n  category = 'Strategy';\n} else if (title.includes('training') || title.includes('onboarding') || title.includes('workshop')) {\n  category = 'Training';\n} else if (title.includes('sync') || title.includes('weekly') || title.includes('team') || meetingType.includes('team')) {\n  category = 'Team sync';\n} else if (meetingType.includes('1:1') || meetingType.includes('one on one')) {\n  category = '1:1';\n} else if (duration > 0 && duration <= 15) { category = '1:1';\n} else { category = 'Internal'; }\n\nconst EMAIL_TO_NAME = {\n  'shiv@novagentica.com': 'Shiv Tailor',\n  'maru@novagentica.com': 'Maru Winnacker',\n  'felix@novagentica.com': 'Felix Bühner',\n  'martin@novagentica.com': 'Martin Hofmann',\n  'helmuth@novagentica.com': 'Helmuth Zimmermann',\n  'luuk@novagentica.com': 'Luuk',\n  'elmundo@novagentica.com': 'Elmundo',\n};\nconst EMAIL_TO_NOTION_ID = {\n  'shiv@novagentica.com': '368d872b-594c-81c6-9d9d-00027c18626e',\n  'maru@novagentica.com': '36bd872b-594c-8187-8fd1-0002a5b3b26b',\n  'felix@novagentica.com': '36bd872b-594c-81dd-9f41-0002d2c5e485',\n  'martin@novagentica.com': '2cbd872b-594c-81e6-8f6e-0002348d1677',\n  'helmuth@novagentica.com': '36bd872b-594c-8104-990b-00027d6ae729',\n  'luuk@novagentica.com': '37ad872b-594c-81de-aa92-00028a4acf58',\n  'elmundo@novagentica.com': '36bd872b-594c-8151-8973-00023a14ae6f',\n};\nconst allEmails = t.allEmails || [];\nconst attendeeNames = [...new Set(allEmails.map(e => EMAIL_TO_NAME[e] || e))];\nconst attendeeNotionIds = [...new Set(allEmails.map(e => EMAIL_TO_NOTION_ID[e]).filter(Boolean))];\nconst hostName = EMAIL_TO_NAME[t.organizerEmail] || t.organizerEmail || '';\nconst hostNotionId = EMAIL_TO_NOTION_ID[t.organizerEmail] || null;\n\nfunction formatActionItems(raw) {\n  if (!raw) return '';\n  const lines = [];\n  let currentPerson = null;\n  for (const line of raw.split('\\n')) {\n    const trimmed = line.trim();\n    const nameMatch = trimmed.match(/^\\*\\*(.+?)\\*\\*$/);\n    if (nameMatch) { currentPerson = nameMatch[1].trim();\n    } else if (trimmed && currentPerson) {\n      const action = trimmed.replace(/\\s*\\(\\d+:\\d+\\)\\s*$/, '').trim();\n      if (action) lines.push('• ' + action + ' — ' + currentPerson);\n    }\n  }\n  return lines.join('\\n');\n}\n\nfunction truncate2000(str) {\n  if (str.length <= 2000) return str;\n  const cut = str.lastIndexOf('\\n', 1990);\n  return (cut > 0 ? str.slice(0, cut) : str.slice(0, 1990)) + '\\n…';\n}\n\nconst actionItemsFormatted = truncate2000(formatActionItems(actionItemsList));\n\nreturn [{ json: {\n  meetingId: t.meetingId, meetingTitle: t.meetingTitle, meetingDate: t.meetingDate,\n  transcriptUrl: t.transcriptUrl || '', overview: t.lastCallSummary || '',\n  gist: t.gist || '', actionItems: actionItemsList, actionItemsFormatted,\n  newSummary: t.lastCallSummary || '', internalMeetingCategory: category,\n  allEmails, attendeeNames, attendeeNotionIds, hostName, hostNotionId,\n}}];"
+      },
+      "id": "ede7f948-8825-43bf-929e-010ec127b9ad",
+      "name": "Classify Internal Meeting",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "3797228d-b80e-81f2-ac10-c73aa10a7b72",
+          "mode": "list",
+          "cachedResultName": "Fred’s Fireflies Meetings",
+          "cachedResultUrl": "https://app.notion.com/p/3797228db80e81f2ac10c73aa10a7b72"
+        },
+        "title": "={{ $json.meetingTitle }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Date|date",
+              "date": "={{ $json.meetingDate }}"
+            },
+            {
+              "key": "Multi-select|multi_select",
+              "multiSelectValue": [
+                "Internal"
+              ]
+            },
+            {
+              "key": "Type|rich_text",
+              "textContent": "={{ $json.internalMeetingCategory }}"
+            },
+            {
+              "key": "Overview|rich_text",
+              "textContent": "={{ $json.overview }}"
+            },
+            {
+              "key": "Gist|rich_text",
+              "textContent": "={{ $json.gist }}"
+            },
+            {
+              "key": "Action Items|rich_text",
+              "textContent": "={{ $json.actionItemsFormatted }}"
+            },
+            {
+              "key": "New Summary|rich_text",
+              "textContent": "={{ $json.newSummary }}"
+            },
+            {
+              "key": "Transcript|url",
+              "ignoreIfEmpty": true,
+              "urlValue": "={{ $json.transcriptUrl }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2a71800-821a-49da-bfff-f2f24ce888d7",
+      "name": "Log to Fireflies DB",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "b8e23af0-9320-4d0b-95f4-2516be716df4",
+          "mode": "list",
+          "cachedResultName": "👥 Contacts",
+          "cachedResultUrl": "https://app.notion.com/p/b8e23af093204d0b95f42516be716df4"
+        },
+        "title": "={{ $('Extract External Attendees').item.json.primaryExternalEmail.split('@')[0].split(/[.\\-_]/).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ') }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Email|email",
+              "emailValue": "={{ $('Extract External Attendees').item.json.primaryExternalEmail }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "51b86844-d6f9-4eb6-b502-f0d24802d17a",
+      "name": "Create Contact in Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1584,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "9d5937c2-23ae-4647-82f1-1f80c0dee5b3",
+      "name": "Poll Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Look back 12 hours — Fireflies fromDate filters by meeting date, not processing date.\n// Meetings can take 15-45 min to process, so a short window misses them.\nconst fromDate = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();\nreturn [{ json: { fromDate } }];"
+      },
+      "id": "e5a315b1-a257-495f-8f39-6fe00ddee36a",
+      "name": "Build Poll Window",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fireflies.ai/graphql",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"query\": \"query ListTranscripts($fromDate: DateTime) { transcripts(fromDate: $fromDate, limit: 25) { id title organizer_email participants summary { overview action_items gist meeting_type topics_discussed } transcript_url duration dateString speakers { id name } } }\", \"variables\": { \"fromDate\": $json.fromDate } } }}",
+        "options": {}
+      },
+      "id": "b9f661aa-a088-487e-9896-30d5885d82e8",
+      "name": "List Recent Transcripts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.transcripts",
+        "options": {}
+      },
+      "id": "172cf306-76bd-4eac-b01a-721d45103030",
+      "name": "Split Transcripts",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        224,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xNoaQ0pvF4EXx4QZ",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "0cc3b46e-8239-473d-8435-3a4ef63eb19b",
+      "name": "Run LIGHT Flow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        3712,
+        -256
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "w7a27FZlND1LaqeM",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "41774dc4-7778-4c7f-83c3-f9a71b6298e5",
+      "name": "Run FULL Flow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        3968,
+        -96
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "WtZQrnA1Zu9eaeg2",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "e6c6fff5-72ad-4acc-919f-afc67b6c4187",
+      "name": "Run EXPANSION Flow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        3680,
+        272
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nif (!staticData.processedMeetingIds) staticData.processedMeetingIds = [];\nif (staticData.processedMeetingIds.length > 1000) {\n  staticData.processedMeetingIds = staticData.processedMeetingIds.slice(-1000);\n}\n\nconst allItems = $input.all();\nconst newItems = allItems.filter(item => {\n  const id = item.json.id;\n  return id && !staticData.processedMeetingIds.includes(id);\n});\n\nnewItems.forEach(item => {\n  if (item.json.id) staticData.processedMeetingIds.push(item.json.id);\n});\n\nif (newItems.length === 0) return [];\n\nreturn newItems.map(item => ({ json: { ...item.json } }));"
+      },
+      "id": "ddcbfd85-bd70-4494-8d68-90fc8f022ef0",
+      "name": "Deduplicate Transcripts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        416
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "m1",
+              "name": "meetingTitle",
+              "value": "={{ $('Classify Internal Meeting').first().json.meetingTitle }}",
+              "type": "string"
+            },
+            {
+              "id": "m2",
+              "name": "meetingDate",
+              "value": "={{ $('Classify Internal Meeting').first().json.meetingDate }}",
+              "type": "string"
+            },
+            {
+              "id": "m3",
+              "name": "internalMeetingCategory",
+              "value": "={{ $('Classify Internal Meeting').first().json.internalMeetingCategory }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "768a7d31-6bca-4ad1-89b4-a1f1ff2ef592",
+      "name": "Restore Meeting Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/pages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => {\n  const r = $('Restore Meeting Data').first().json;\n  const c = $('Classify Internal Meeting').first().json;\n  const attendeeIds = c.attendeeNotionIds || [];\n  const EMOJI = {\n    '1:1': '👥',\n    'Standup': '⚡',\n    'All-hands': '🏢',\n    'Retrospective': '🔄',\n    'Interview': '🎤',\n    'Board': '📊',\n    'Strategy': '🎯',\n    'Training': '📚',\n    'Team sync': '🤝',\n    'Internal': '📝',\n  };\n  const cat = r.internalMeetingCategory || 'Internal';\n  const emoji = EMOJI[cat] || '📝';\n  return {\n    \"parent\": { \"database_id\": \"be0a73a826854e5c827e15ba07dd315c\" },\n    \"properties\": {\n      \"Title\": { \"title\": [{ \"text\": { \"content\": emoji + ' ' + (r.meetingTitle || '(untitled)') } }] },\n      \"Date\": { \"date\": { \"start\": r.meetingDate } },\n      \"Type\": { \"select\": { \"name\": cat } },\n      \"Attendees\": { \"people\": attendeeIds.map(id => ({ \"object\": \"user\", \"id\": id })) }\n    }\n  };\n})() }}",
+        "options": {}
+      },
+      "id": "69cb63b3-4047-44ee-9248-d623f5632ad7",
+      "name": "Create Meeting Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2400,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/databases/be0a73a826854e5c827e15ba07dd315c/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"filter\": { \"property\": \"Title\", \"title\": { \"equals\": $('Restore Meeting Data').first().json.meetingTitle || \"\" } } } }}",
+        "options": {}
+      },
+      "id": "f5be405a-9a8a-4303-a4b3-4e188c206cdc",
+      "name": "Check Existing Meeting",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1520,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.results.length }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e25e8eeb-fc6e-4473-9929-7eb2337178db",
+      "name": "Meeting Already Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1744,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.notion.com/v1/pages/' + $input.first().json.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const m = $('Classify Internal Meeting').first().json; const props = { \"Attendees\": { \"multi_select\": m.attendeeNames.map(n => ({ \"name\": n })) } }; if (m.hostNotionId) { props[\"Host\"] = { \"people\": [{ \"object\": \"user\", \"id\": m.hostNotionId }] }; } return { \"properties\": props }; })() }}",
+        "options": {}
+      },
+      "id": "9c4d9e5b-0c5b-4b97-8fda-ff9cf9bb925e",
+      "name": "Update Fireflies Attendees",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1168,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst text = (raw.content && raw.content[0] && raw.content[0].text) || raw.text || raw.response || '';\nconst actionTag = '[ACTION ITEMS]';\nconst decisionsTag = '[DECISIONS]';\nconst actionStart = text.indexOf(actionTag);\nconst decisionsStart = text.indexOf(decisionsTag);\nlet actionItemsText = '';\nlet decisionsText = '';\nif (actionStart !== -1) {\n  const end = decisionsStart !== -1 ? decisionsStart : text.length;\n  actionItemsText = text.slice(actionStart + actionTag.length, end).trim();\n} else { actionItemsText = text.trim(); }\nif (decisionsStart !== -1) {\n  decisionsText = text.slice(decisionsStart + decisionsTag.length).trim();\n}\nreturn [{ json: { actionItemsText, decisionsText } }];"
+      },
+      "id": "5ab4f9fa-ef73-47ce-8bf9-e71fc661db1c",
+      "name": "Extract Meeting Sections",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2192,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"model\": \"claude-haiku-4-5-20251001\", \"max_tokens\": 1024, \"messages\": [{ \"role\": \"user\", \"content\": \"Process this meeting and output exactly two sections.\\n\\n[ACTION ITEMS]\\nRewrite each item as a punchy verb-led task (max 8 words). Keep **Person Name** headers exactly as-is. Remove timestamps.\\n\\n[DECISIONS]\\nList the 3-5 key decisions made in this meeting as bullet points starting with • (max 10 words each). If no clear decisions, write • No decisions recorded.\\n\\n---\\nAction items:\\n\" + ($('Classify Internal Meeting').first().json.actionItems || '') + \"\\n\\nOverview:\\n\" + ($('Classify Internal Meeting').first().json.overview || '') }] } }}",
+        "options": {}
+      },
+      "id": "72b9a2a9-5eeb-429c-a497-0b8562ad4ed3",
+      "name": "Rewrite Action Items",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1968,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meetingPageId = $('Create Meeting Record').first().json.id || '';\nconst actionItemsText = ($('Extract Meeting Sections').first().json.actionItemsText || '').trim();\nif (!actionItemsText) return [];\nconst NAME_TO_NOTION_ID = {\n  'shiv tailor': '368d872b-594c-81c6-9d9d-00027c18626e',\n  'maru winnacker': '36bd872b-594c-8187-8fd1-0002a5b3b26b',\n  'felix bühner': '36bd872b-594c-81dd-9f41-0002d2c5e485',\n  'felix buhner': '36bd872b-594c-81dd-9f41-0002d2c5e485',\n  'martin hofmann': '2cbd872b-594c-81e6-8f6e-0002348d1677',\n  'helmuth zimmermann': '36bd872b-594c-8104-990b-00027d6ae729',\n  'shiv': '368d872b-594c-81c6-9d9d-00027c18626e',\n  'maru': '36bd872b-594c-8187-8fd1-0002a5b3b26b',\n  'felix': '36bd872b-594c-81dd-9f41-0002d2c5e485',\n  'martin': '2cbd872b-594c-81e6-8f6e-0002348d1677',\n  'helmuth': '36bd872b-594c-8104-990b-00027d6ae729',\n  'luuk': '37ad872b-594c-81de-aa92-00028a4acf58',\n  'elmundo': '36bd872b-594c-8151-8973-00023a14ae6f',\n};\nconst tasks = [];\nconst lines = actionItemsText.split('\\n');\nlet currentPerson = null;\nlet currentNotionId = null;\nfor (const line of lines) {\n  const trimmed = line.trim();\n  const nameMatch = trimmed.match(/^\\*\\*(.+?)\\*\\*$/);\n  if (nameMatch) {\n    currentPerson = nameMatch[1].trim();\n    currentNotionId = NAME_TO_NOTION_ID[currentPerson.toLowerCase()] || null;\n  } else if (trimmed && currentPerson) {\n    const rawItem = trimmed.replace(/^[•\\-]\\s*/, '').replace(/\\s*\\(\\d+:\\d+\\)\\s*$/, '').trim();\n    if (rawItem) tasks.push({ json: { title: rawItem, dri: currentPerson, notionUserId: currentNotionId, meetingPageId } });\n  }\n}\nreturn tasks;"
+      },
+      "id": "b49cd6b2-42aa-499a-80a9-a7a8116db133",
+      "name": "Parse Action Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/pages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => {\n  const props = {\n    \"Title\": { \"title\": [{ \"text\": { \"content\": $json.title || \"(no title)\" } }] },\n    \"DRI\": { \"rich_text\": [{ \"text\": { \"content\": $json.dri || \"\" } }] },\n    \"Meeting\": { \"relation\": [{ \"id\": $json.meetingPageId }] }\n  };\n  if ($json.notionUserId) {\n    props[\"Assignee\"] = { \"people\": [{ \"object\": \"user\", \"id\": $json.notionUserId }] };\n  }\n  return { \"parent\": { \"database_id\": \"ddee5caa4a064ec0b825a40dc662d04d\" }, \"properties\": props };\n})() }}",
+        "options": {}
+      },
+      "id": "2aaf88e3-1ae2-4f17-9692-bf0afc4ff117",
+      "name": "Create Action Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2864,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meetingPageId = $('Create Meeting Record').first().json.id || '';\nconst decisionsText = ($('Extract Meeting Sections').first().json.decisionsText || '').trim();\nif (!decisionsText) return [];\nconst decisions = [];\nfor (const line of decisionsText.split('\\n')) {\n  const trimmed = line.trim().replace(/^[•\\-]\\s*/, '').trim();\n  if (trimmed && !trimmed.toLowerCase().includes('no decisions recorded')) {\n    decisions.push({ json: { title: trimmed, meetingPageId } });\n  }\n}\nreturn decisions;"
+      },
+      "id": "35bef8e2-c689-403a-ba84-694eb3546656",
+      "name": "Parse Decisions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/pages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"parent\": { \"database_id\": \"834391f4091b4bf8b843e6339a4d95d6\" }, \"properties\": { \"Title\": { \"title\": [{ \"text\": { \"content\": $json.title || \"(no title)\" } }] }, \"Meeting\": { \"relation\": [{ \"id\": $json.meetingPageId }] } } } }}",
+        "options": {}
+      },
+      "id": "1b8df4b2-12da-4fa0-a2af-7c877bf26371",
+      "name": "Create Decision Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2864,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/databases/19bba828-e94d-4d2f-919d-ddd2c6991302/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"filter\": { \"property\": \"Contacts\", \"relation\": { \"contains\": $json.contactId } }, \"page_size\": 1 } }}",
+        "options": {}
+      },
+      "id": "db112750-d774-46f8-ac13-1055b86e7cc3",
+      "name": "Get Company",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2000,
+        80
+      ]
+    },
+    {
+      "id": "048af5e1-9063-4f40-bfa4-ff2e9352d4a5",
+      "name": "Claude Meeting Classifier",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $credentials.apiKey }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"model\": \"claude-haiku-4-5-20251001\", \"max_tokens\": 128, \"messages\": [{ \"role\": \"user\", \"content\": \"Classify this business meeting into exactly one category.\\n\\nCategories:\\n- sales: meeting with a prospect or customer about buying our product/service\\n- supplier: meeting with a vendor or service provider we purchase from\\n- partner: strategic partnership, integration, or collaboration\\n- investor: meeting with an investor or about funding\\n- unknown: cannot determine\\n\\nMeeting title: \" + $json.meetingTitle + \"\\nFireflies type: \" + $json.meetingType + \"\\nCompany: \" + $json.companyName + \"\\nCompany CRM tags: \" + $json.companyTags + \"\\nSummary: \" + $json.overview + \"\\n\\nRespond with ONLY valid JSON: {\\\"category\\\":\\\"sales\\\"|\\\"supplier\\\"|\\\"partner\\\"|\\\"investor\\\"|\\\"unknown\\\"}\" }] } }}"
+      }
+    },
+    {
+      "id": "df74a4e7-5fde-4c88-a59a-c826a895f5f6",
+      "name": "Parse Meeting Category",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2460,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst text = (raw.content && raw.content[0] && raw.content[0].text) || raw.text || '';\nlet category = 'unknown';\ntry {\n  const m = text.match(/\\{[^}]+\\}/);\n  if (m) { const p = JSON.parse(m[0]); category = p.category || 'unknown'; }\n} catch(e) {}\nconst prev = $('Classify Company Type').first().json;\nreturn [{ json: { ...prev, category } }];"
+      }
+    },
+    {
+      "id": "4040bb9c-fd99-49ae-9a66-58634404f29b",
+      "name": "Build Classifier Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        140
+      ],
+      "parameters": {
+        "jsCode": "const m = $('Extract External Attendees').first().json;\nconst c = $('Classify Company Type').first().json;\nconst domains = (m.externalEmails || []).map(e => (String(e).split('@')[1] || '')).filter(Boolean);\nconst system = [\n  'You classify one business meeting into exactly one category, using the external participants and the meeting content.',\n  'Categories:',\n  '- SALES: Novagentica is the SELLER; the external party is a customer or prospect evaluating or buying Novagentica AI products or services.',\n  '- VENDOR: the external party is SELLING TO Novagentica - a supplier, tool, SaaS, contractor, or service provider pitching or servicing something Novagentica buys.',\n  '- PARTNER: a channel, referral, reseller, alliance, integration, or co-delivery partner; mutual go-to-market or joint delivery.',\n  '- INVESTOR: a VC, angel, LP, or investor-relations conversation (fundraising, diligence, investor updates).',\n  '- OTHER: recruiting/interview, press/analyst, networking, or genuinely unclear.',\n  'Decision rule: work out who is selling to whom. If the EXTERNAL party is pitching or selling something Novagentica would BUY (or Novagentica is reviewing their proposal or pricing), it is VENDOR. If Novagentica is selling ITS OWN AI services to the external party, it is SALES.',\n  'Treat the CRM company type as a strong hint but override it when the meeting content clearly indicates a different category.',\n  'Decide decisively on exactly one category. Respond with ONLY a minified JSON object and nothing else, no markdown. Keep reasoning to at most 12 words. Format: {\"category\":\"SALES|VENDOR|PARTNER|INVESTOR|OTHER\",\"confidence\":0.0-1.0,\"reasoning\":\"<=12 words\"}.'\n].join('\\n');\nconst userContent = [\n  'MEETING TITLE: ' + (m.meetingTitle || '(none)'),\n  'FIREFLIES MEETING TYPE: ' + (m.meetingType || 'unknown'),\n  'EXTERNAL ATTENDEE EMAILS: ' + ((m.externalEmails || []).join(', ') || '(none)'),\n  'EXTERNAL DOMAINS: ' + (domains.join(', ') || '(none)'),\n  'CRM COMPANY: ' + (c.companyName || '(not found in CRM)'),\n  'CRM COMPANY TYPE (hint, may be missing/wrong): ' + (c.companyType || '(none)'),\n  'CRM INDUSTRY: ' + (c.companyIndustry || '(none)'),\n  'OVERVIEW: ' + String(m.lastCallSummary || '').slice(0, 1500),\n  'GIST: ' + (m.gist || ''),\n  'TOPICS: ' + (Array.isArray(m.topicsDiscussed) ? m.topicsDiscussed.join('; ') : (m.topicsDiscussed || ''))\n].join('\\n');\nreturn [{ json: { system, userContent } }];"
+      }
+    },
+    {
+      "id": "adaf6690-c96d-4d55-93d8-69adf9bc793f",
+      "name": "AI Classify Call Type",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        140
+      ],
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "claude-sonnet-4-6"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.userContent }}",
+              "role": "user"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "system": "={{ $json.system }}",
+          "maxTokens": 1024
+        }
+      }
+    },
+    {
+      "id": "b39d2e18-edb2-464e-89c0-3b4d0bdb36d9",
+      "name": "Parse Classification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        140
+      ],
+      "parameters": {
+        "jsCode": "const c = $('Classify Company Type').first().json;\nconst m = $('Extract External Attendees').first().json;\nconst contact = $('Extract Contact Data').first().json || {};\nfunction extractText(ai){\n  if (ai == null) return '';\n  if (typeof ai === 'string') return ai;\n  if (typeof ai.text === 'string') return ai.text;\n  if (typeof ai.completion === 'string') return ai.completion;\n  if (typeof ai.output === 'string') return ai.output;\n  if (typeof ai.response === 'string') return ai.response;\n  if (typeof ai.message === 'string') return ai.message;\n  if (ai.message && typeof ai.message.content === 'string') return ai.message.content;\n  if (Array.isArray(ai.content)) return ai.content.map(x => (x && typeof x.text==='string') ? x.text : (typeof x==='string'?x:'')).join('');\n  if (typeof ai.content === 'string') return ai.content;\n  try { return JSON.stringify(ai); } catch(e){ return ''; }\n}\nconst raw = extractText($input.first().json);\nlet parsed = {};\ntry { let s = String(raw).replace(/```json/gi,'').replace(/```/g,'').trim(); const a=s.indexOf('{'); const b=s.lastIndexOf('}'); if(a!==-1&&b!==-1) s=s.slice(a,b+1); parsed=JSON.parse(s); } catch(e){ parsed={}; }\nif(!parsed.category){ const cm=String(raw).match(/\"category\"\\s*:\\s*\"([A-Za-z]+)\"/i); if(cm) parsed.category=cm[1]; }\nif(parsed.confidence===undefined||parsed.confidence===null){ const fm=String(raw).match(/\"confidence\"\\s*:\\s*([0-9.]+)/); if(fm) parsed.confidence=parseFloat(fm[1]); }\nif(!parsed.reasoning){ const rm=String(raw).match(/\"reasoning\"\\s*:\\s*\"([^\"]*)/); if(rm) parsed.reasoning=rm[1]; }\nconst VALID=['SALES','VENDOR','PARTNER','INVESTOR','OTHER'];\nlet category=String(parsed.category||'').toUpperCase().trim();\nif(!VALID.includes(category)) category='OTHER';\nlet confidence=Number(parsed.confidence);\nif(!isFinite(confidence)) confidence=0;\nconst reasoning=String(parsed.reasoning||'').slice(0,500);\nconst NOTION_TYPE={SALES:'Sales call',VENDOR:'Vendor',PARTNER:'Partner',INVESTOR:'Investor',OTHER:'Other'};\nconst EMOJI={SALES:'💰',VENDOR:'🧾',PARTNER:'🤝',INVESTOR:'📈',OTHER:'❓'};\nconst crmType=c.companyType||'';\nconst crmMissing=!crmType||c.reason==='company_not_found';\nlet crmCategory='';\nif(crmType.includes('Client')||crmType.includes('Prospect')) crmCategory='SALES';\nelse if(crmType.includes('Vendor')) crmCategory='VENDOR';\nelse if(crmType.includes('Partner')) crmCategory='PARTNER';\nelse if(crmType.includes('Investor')) crmCategory='INVESTOR';\nconst agree=crmMissing||!crmCategory||crmCategory===category;\nconst needsReview=!agree||confidence<0.6;\nreturn [{ json: { ...c, category, confidence, reasoning, notionType:NOTION_TYPE[category], categoryEmoji:EMOJI[category], crmType, crmCategory, crmMissing, agree, needsReview, rawClassifier:String(raw).slice(0,300), meetingId:m.meetingId, meetingTitle:m.meetingTitle, meetingDate:m.meetingDate, transcriptUrl:m.transcriptUrl, lastCallSummary:m.lastCallSummary, gist:m.gist, primaryExternalEmail:m.primaryExternalEmail, externalEmails:m.externalEmails, contactId:contact.contactId||null, contactName:contact.contactName||'' } }];"
+      }
+    },
+    {
+      "id": "5a2c81e1-6577-4758-8d6e-68d2f6ac72be",
+      "name": "Route by Call Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2784,
+        140
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "SALES"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "VENDOR"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "PARTNER"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "INVESTOR"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "OTHER"
+        }
+      }
+    },
+    {
+      "id": "6ced9254-651f-4ad7-b91f-423f326107e3",
+      "name": "Create External Meeting Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3008,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/pages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const p = $('Parse Classification').first().json; const m = $('Extract External Attendees').first().json; const trunc = (s, n) => s && s.length > n ? s.slice(0, n-1) + '…' : (s || ''); const props = { 'Title': { 'title': [{ 'text': { 'content': (p.categoryEmoji || '📝') + ' ' + (m.meetingTitle || '(untitled)') } }] }, 'Date': { 'date': { 'start': m.meetingDate } }, 'Type': { 'select': { 'name': p.notionType || 'Other' } }, 'Fireflies ID': { 'rich_text': [{ 'text': { 'content': String(p.meetingId || m.meetingId || '') } }] } }; if (p.companyId) props['Companies'] = { 'relation': [{ 'id': p.companyId }] }; if (p.contactId) props['Contacts'] = { 'relation': [{ 'id': p.contactId }] }; const children = [ { 'object':'block','type':'callout','callout':{ 'rich_text':[{ 'type':'text','text':{ 'content': 'Classified as ' + (p.category||'OTHER') + ' (confidence ' + Math.round((p.confidence||0)*100) + '%). ' + (p.reasoning||'') } }], 'icon': { 'emoji': (p.categoryEmoji||'📝') }, 'color': (p.needsReview ? 'yellow_background' : 'gray_background') } }, { 'object':'block','type':'paragraph','paragraph':{ 'rich_text':[{ 'type':'text','text':{ 'content': trunc(m.lastCallSummary, 1900) } }] } } ]; if (m.transcriptUrl) { children.push({ 'object':'block','type':'paragraph','paragraph':{ 'rich_text':[{ 'type':'text','text':{ 'content': 'Transcript', 'link': { 'url': m.transcriptUrl } } }] } }); } return { 'parent': { 'database_id': 'be0a73a826854e5c827e15ba07dd315c' }, 'properties': props, 'children': children }; })() }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "dade6bfe-eac1-477d-b236-c9400500a98b",
+      "name": "Notify Classified Call",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        3232,
+        300
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "D0B3KBGM2CQ"
+        },
+        "text": "={{ (() => { const p = $('Parse Classification').first().json; const flag = p.needsReview ? '⚠️ REVIEW ' : ''; return flag + (p.categoryEmoji||'') + ' *' + (p.category||'OTHER') + '* call logged — *' + (p.meetingTitle||'(untitled)') + '*' + (p.companyName ? ' · ' + p.companyName : '') + (p.primaryExternalEmail ? ' · ' + p.primaryExternalEmail : '') + '\\n• Confidence: ' + Math.round((p.confidence||0)*100) + '%' + (p.agree ? '' : ' · ⚠️ CRM says ' + (p.crmType||'?')) + '\\n• ' + (p.reasoning||''); })() }}",
+        "otherOptions": {}
+      },
+      "webhookId": "9f7063a9-027a-4da3-a53f-47967e688b1d"
+    },
+    {
+      "id": "a6a1e4f3-cbb8-489a-b19d-b557a347bfe5",
+      "name": "Check External Meeting Exists",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2912,
+        460
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/databases/be0a73a826854e5c827e15ba07dd315c/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"filter\": { \"property\": \"Fireflies ID\", \"rich_text\": { \"equals\": ($('Parse Classification').first().json.meetingId || \"___none___\") } }, \"page_size\": 1 } }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "6ae4df11-561f-48df-a524-377a0556deda",
+      "name": "External Meeting Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3104,
+        460
+      ],
+      "parameters": {
+        "options": {
+          "caseSensitive": true,
+          "leftValue": "",
+          "typeValidation": "loose",
+          "version": 2
+        },
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ext-exists-1",
+              "leftValue": "={{ $json.results.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Fetch Fireflies Transcript": {
+      "main": [
+        [
+          {
+            "node": "Extract External Attendees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract External Attendees": {
+      "main": [
+        [
+          {
+            "node": "Has External Attendees?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has External Attendees?": {
+      "main": [
+        [
+          {
+            "node": "Lookup Contact by Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sticky Note 3826cd91",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Classify Internal Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Contact by Email": {
+      "main": [
+        [
+          {
+            "node": "Contact Found in CRM?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact Found in CRM?": {
+      "main": [
+        [
+          {
+            "node": "Extract Contact Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Contact in Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Open Deals": {
+      "main": [
+        [
+          {
+            "node": "Find Best Deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Best Deal": {
+      "main": [
+        [
+          {
+            "node": "Has Open Deals?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Open Deals?": {
+      "main": [
+        [
+          {
+            "node": "Route by Deal Stage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert No Open Deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Deal Stage": {
+      "main": [
+        [
+          {
+            "node": "Sticky Note 53859655",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Light Flow Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Full Flow Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Expansion Flow Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sticky Note 93d9a18f",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Internal Meeting": {
+      "main": [
+        [
+          {
+            "node": "Log to Fireflies DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Contact in Notion": {
+      "main": [
+        [
+          {
+            "node": "Extract Contact Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poll Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Poll Window",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Poll Window": {
+      "main": [
+        [
+          {
+            "node": "List Recent Transcripts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Recent Transcripts": {
+      "main": [
+        [
+          {
+            "node": "Split Transcripts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Light Flow Context": {
+      "main": [
+        [
+          {
+            "node": "Run LIGHT Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Full Flow Context": {
+      "main": [
+        [
+          {
+            "node": "Run FULL Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Expansion Flow Context": {
+      "main": [
+        [
+          {
+            "node": "Run EXPANSION Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Transcripts": {
+      "main": [
+        [
+          {
+            "node": "Deduplicate Transcripts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplicate Transcripts": {
+      "main": [
+        [
+          {
+            "node": "Fetch Fireflies Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Meeting Data": {
+      "main": [
+        [
+          {
+            "node": "Check Existing Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing Meeting": {
+      "main": [
+        [
+          {
+            "node": "Meeting Already Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Fireflies DB": {
+      "main": [
+        [
+          {
+            "node": "Update Fireflies Attendees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Fireflies Attendees": {
+      "main": [
+        [
+          {
+            "node": "Restore Meeting Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meeting Already Exists?": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Rewrite Action Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Action Items": {
+      "main": [
+        [
+          {
+            "node": "Extract Meeting Sections",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Meeting Record": {
+      "main": [
+        [
+          {
+            "node": "Parse Action Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Parse Decisions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Action Items": {
+      "main": [
+        [
+          {
+            "node": "Create Action Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Decisions": {
+      "main": [
+        [
+          {
+            "node": "Create Decision Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Meeting Sections": {
+      "main": [
+        [
+          {
+            "node": "Create Meeting Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Contact Data": {
+      "main": [
+        [
+          {
+            "node": "Get Company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Company": {
+      "main": [
+        [
+          {
+            "node": "Classify Company Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Company Type": {
+      "main": [
+        [
+          {
+            "node": "Build Classifier Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Meeting Classifier": {
+      "main": [
+        [
+          {
+            "node": "Parse Meeting Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Classifier Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Classify Call Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Classify Call Type": {
+      "main": [
+        [
+          {
+            "node": "Parse Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Classification": {
+      "main": [
+        [
+          {
+            "node": "Route by Call Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Call Type": {
+      "main": [
+        [
+          {
+            "node": "Get Open Deals",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check External Meeting Exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check External Meeting Exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check External Meeting Exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check External Meeting Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create External Meeting Record": {
+      "main": [
+        [
+          {
+            "node": "Notify Classified Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check External Meeting Exists": {
+      "main": [
+        [
+          {
+            "node": "External Meeting Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "External Meeting Exists?": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Create External Meeting Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true
+  },
+  "description": "Routes Fireflies meeting.transcribed webhooks to the correct proposal generation flow (STOP/LIGHT/FULL/EXPANSION) based on CRM lookup, company type, deal stage, and meeting type classification."
+}

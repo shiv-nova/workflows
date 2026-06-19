@@ -1,0 +1,289 @@
+{
+  "name": "FULL: Proposal Generation",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## FULL: Proposal Generation\n\nTriggered by Meeting Router for Qualified Opportunity or Solution Validation deals.\n\n**Steps:**\n1. Receive meeting context from Meeting Router\n2. Fetch all use cases from Notion library\n3. Prepare prompt combining meeting data + use cases\n4. Claude Opus generates proposal JSON\n5. Parse Claude output\n6. Create SoW in Google Docs\n7. Create pitch deck in Google Slides\n8. Create Project in Notion\n9. Send Slack approval request (sendAndWait)\n\n**Note:** Google Slides creates the presentation. For full multi-slide content, use the Google Slides API batch update after creation.",
+        "height": 280,
+        "width": 600,
+        "color": 2
+      },
+      "id": "730cd77c-9bc0-483e-aa8e-4332734a9a3a",
+      "name": "Sticky Note 08d27c08",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [32, -192]
+    },
+    {
+      "parameters": {
+        "content": "## Google Slides Note\n\nThis node creates the presentation shell. The Google Slides n8n node only supports `create`, `get`, `getSlides`, `replaceText`, and `getThumbnail` operations — it does not support adding new slides via n8n directly.\n\nTo add slides with content, use an HTTP Request node calling the Google Slides batchUpdate API after this step, or update slide content using `replaceText` on the default blank slide.",
+        "height": 200,
+        "width": 500,
+        "color": 5
+      },
+      "id": "2fc2bb64-d0e5-435b-a526-53cc2fe4f7f9",
+      "name": "Sticky Note 2478fb41",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [2176, 688]
+    },
+    {
+      "parameters": { "inputSource": "passthrough" },
+      "id": "6293e2ff-20dc-4800-984e-6e4dcaf2f2f3",
+      "name": "Meeting Router Call",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": { "__rl": true, "mode": "id", "value": "67d44f8d-ca02-4178-8b9f-cecb2d4301c6", "cachedResultName": "Use Case Library" },
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "7d7e515a-9dea-4bc5-a0a6-43650b1aba0b",
+      "name": "Query Use Case Library",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [656, 384],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst triggerData = $('Meeting Router Call').first().json;\nconst useCaseItems = $('Query Use Case Library').all();\n\nconst useCasesSerialized = useCaseItems.map(item => {\n  const j = item.json;\n  const name = j['Use case'] || j.name || 'Unknown';\n  const slug = j['Slug'] || j.slug || '';\n  const vertical = j['Vertical'] || '';\n  const fn = j['Function'] || '';\n  const headline = j['CEO headline'] || '';\n  const outcome = j['Outcome / KPI'] || '';\n  return `- [${slug}] ${name} (Vertical: ${vertical}, Function: ${fn})\\n  Business value: ${headline}\\n  Outcome: ${outcome}`;\n}).join('\\n');\n\n// Use newly created Slack channel ID if one was auto-created this execution\nlet slackChannelId;\ntry {\n  slackChannelId = $('Create Company Channel').first().json.id;\n} catch(e) {\n  slackChannelId = triggerData.slackChannelId || '';\n}\n\nconst userPrompt = `CLIENT: ${triggerData.companyName} (${triggerData.companyIndustry})\\nDEAL: ${triggerData.dealName} — ${triggerData.dealStage} — ${triggerData.dealType}\\nCONTACT: ${triggerData.contactName}, ${triggerData.contactRole}\\nCALL SUMMARY: ${triggerData.lastCallSummary}\\nGIST: ${triggerData.gist}\\nTOPICS DISCUSSED: ${Array.isArray(triggerData.topicsDiscussed) ? triggerData.topicsDiscussed.join(', ') : triggerData.topicsDiscussed}\\nACTION ITEMS: ${Array.isArray(triggerData.actionItems) ? triggerData.actionItems.join('; ') : triggerData.actionItems}\\n\\nAVAILABLE USE CASES FROM OUR LIBRARY:\\n${useCasesSerialized}\\n\\nBased on the discovery call, select the 2-4 most relevant use cases from our library and generate:\\n\\nReturn valid JSON with this exact structure:\\n{\\n  \"selectedUseCases\": [\\n    { \"slug\": \"use-case-slug\", \"name\": \"Use case name\", \"relevanceReason\": \"Why this applies to the client\" }\\n  ],\\n  \"executiveSummary\": \"2-3 paragraph executive summary of the engagement opportunity\",\\n  \"engagementTitle\": \"Short title for this engagement (e.g. AI Automation for [Company] — Phase 1)\",\\n  \"scope\": \"Detailed scope of work: what Novagentica will deliver, what is out of scope\",\\n  \"deliverables\": [\"Deliverable 1\", \"Deliverable 2\"],\\n  \"timeline\": \"Proposed timeline (e.g. 12-week phased delivery: Week 1-2 Discovery, Week 3-6 Build, Week 7-10 Test, Week 11-12 Go-live)\",\\n  \"assumptions\": [\"Key assumption 1\", \"Key assumption 2\"],\\n  \"engagementType\": \"Ingestion or Build or Hybrid\",\\n  \"nextSteps\": \"3-4 immediate next steps to advance this deal\"\\n}\\nReturn only valid JSON.`;\n\nreturn [{\n  json: {\n    userPrompt,\n    meetingId: triggerData.meetingId,\n    meetingDate: triggerData.meetingDate,\n    companyId: triggerData.companyId,\n    companyName: triggerData.companyName,\n    companyIndustry: triggerData.companyIndustry,\n    dealId: triggerData.dealId,\n    dealName: triggerData.dealName,\n    dealStage: triggerData.dealStage,\n    contactName: triggerData.contactName,\n    contactEmail: triggerData.contactEmail,\n    transcriptUrl: triggerData.transcriptUrl,\n    slackChannelId,\n    gDriveFolderUrl: triggerData.gDriveFolderUrl\n  }\n}];\n"
+      },
+      "id": "e2fe6759-2b22-4ca3-968a-5f25a0da6d2c",
+      "name": "Prepare Claude Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [848, 400]
+    },
+    {
+      "parameters": {
+        "modelId": { "__rl": true, "mode": "id", "value": "claude-opus-4-8", "cachedResultName": "Claude Opus 4" },
+        "messages": { "values": [{ "content": "={{ $json.userPrompt }}" }] },
+        "options": {
+          "system": "You are a senior proposal consultant at Novagentica, an AI automation consultancy. You create compelling, specific Statements of Work based on discovery call insights and our use case library. Write in confident, professional business language. Always return valid JSON only — no markdown, no prose.",
+          "maxTokens": 4000
+        }
+      },
+      "id": "39060aa5-c31b-4e69-94b9-01b5cb589b3f",
+      "name": "Generate Proposal with Claude",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [1152, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst claudeItem = $('Generate Proposal with Claude').first().json;\nconst promptItem = $('Prepare Claude Prompt').first().json;\n\nlet rawText = claudeItem.text || claudeItem.output || '';\n\nlet parsed;\ntry {\n  const jsonMatch = rawText.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    parsed = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found in Claude response');\n  }\n} catch (e) {\n  parsed = {\n    selectedUseCases: [{ slug: 'general-ai', name: 'General AI Automation', relevanceReason: 'Broad automation needs identified' }],\n    executiveSummary: 'Executive summary to be refined.',\n    engagementTitle: 'AI Automation for ' + promptItem.companyName + ' — Phase 1',\n    scope: 'Scope to be defined.',\n    deliverables: ['AI Agent Design', 'Integration & Testing', 'Go-Live Support'],\n    timeline: '12-week phased delivery',\n    assumptions: ['Client provides data access', 'Stakeholders available for workshops'],\n    engagementType: 'Build',\n    nextSteps: 'Schedule scoping workshop, agree on data access, align on timeline.'\n  };\n}\n\nconst selectedUseCasesText = (parsed.selectedUseCases || [])\n  .map(uc => '• ' + uc.name + ': ' + uc.relevanceReason)\n  .join('\\n');\n\nconst deliverablesText = (parsed.deliverables || [])\n  .map((d, i) => (i + 1) + '. ' + d)\n  .join('\\n');\n\nconst assumptionsText = (parsed.assumptions || [])\n  .map((a, i) => (i + 1) + '. ' + a)\n  .join('\\n');\n\nconst selectedUseCaseNames = (parsed.selectedUseCases || [])\n  .map(uc => uc.name)\n  .join(', ');\n\nconst sowContent = `STATEMENT OF WORK\\n\\nClient: ${promptItem.companyName}\\nEngagement: ${parsed.engagementTitle}\\nPrepared by: Novagentica\\nDate: ${promptItem.meetingDate}\\n\\nEXECUTIVE SUMMARY\\n${parsed.executiveSummary}\\n\\nSELECTED USE CASES\\n${selectedUseCasesText}\\n\\nSCOPE OF WORK\\n${parsed.scope}\\n\\nDELIVERABLES\\n${deliverablesText}\\n\\nTIMELINE\\n${parsed.timeline}\\n\\nKEY ASSUMPTIONS\\n${assumptionsText}\\n\\nNEXT STEPS\\n${parsed.nextSteps}`;\n\nreturn [{\n  json: {\n    engagementTitle: parsed.engagementTitle,\n    executiveSummary: parsed.executiveSummary,\n    scope: parsed.scope,\n    deliverables: parsed.deliverables,\n    deliverablesText,\n    timeline: parsed.timeline,\n    assumptions: parsed.assumptions,\n    assumptionsText,\n    engagementType: parsed.engagementType || 'Build',\n    nextSteps: parsed.nextSteps,\n    selectedUseCases: parsed.selectedUseCases,\n    selectedUseCasesText,\n    selectedUseCaseNames,\n    sowContent,\n    companyId: promptItem.companyId,\n    companyName: promptItem.companyName,\n    dealId: promptItem.dealId,\n    contactName: promptItem.contactName,\n    contactEmail: promptItem.contactEmail,\n    transcriptUrl: promptItem.transcriptUrl,\n    slackChannelId: promptItem.slackChannelId,\n    gDriveFolderUrl: promptItem.gDriveFolderUrl,\n    meetingDate: promptItem.meetingDate,\n    dealStage: promptItem.dealStage\n  }\n}];\n"
+      },
+      "id": "1fc43413-8910-479d-ac2f-89367c7ea7ac",
+      "name": "Parse Claude Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1440, 400]
+    },
+    {
+      "parameters": {
+        "driveId": "0AAS-m7WwhZgpUk9PVA",
+        "folderId": "={{ (() => { try { return $('Create Client Folder').first().json.id; } catch(e) { const url = $('Parse Claude Response').first().json.gDriveFolderUrl || ''; const parts = url.split('/folders/'); return parts.length > 1 ? parts[1].split('/')[0].split('?')[0] : ''; } })() }}",
+        "title": "=SoW — {{ $json.engagementTitle }}"
+      },
+      "id": "63bda603-e0da-455f-bfbd-97b0265dc0a1",
+      "name": "Create SoW Document",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [1984, 112]
+    },
+    {
+      "parameters": { "title": "={{ $(\"Parse Claude Response\").item.json.engagementTitle }} — Novagentica" },
+      "id": "7efaa020-1b02-42ff-a5b4-57f188eb25a5",
+      "name": "Create Pitch Deck",
+      "type": "n8n-nodes-base.googleSlides",
+      "typeVersion": 2,
+      "position": [1744, 512]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst parsedData = $('Parse Claude Response').first().json;\nconst docData = $('Create SoW Document').first().json;\nconst slidesData = $('Create Pitch Deck').first().json;\n\nconst sowDocId = docData.id || '';\nconst sowUrl = sowDocId ? 'https://docs.google.com/document/d/' + sowDocId + '/edit' : '';\n\nconst deckId = slidesData.presentationId || slidesData.id || '';\nconst deckUrl = deckId ? 'https://docs.google.com/presentation/d/' + deckId + '/edit' : '';\n\nreturn [{\n  json: {\n    ...parsedData,\n    sowDocId,\n    sowUrl,\n    deckId,\n    deckUrl\n  }\n}];\n"
+      },
+      "id": "e4971630-25ab-43c9-8229-234054331a1f",
+      "name": "Combine Document URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2048, 400]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": { "__rl": true, "mode": "id", "value": "43233c61-f84e-4a55-b301-03d760d9259e", "cachedResultName": "Projects" },
+        "title": "={{ $json.engagementTitle }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Client|relation", "type": "relation", "relationValue": ["={{ $json.companyId }}"] },
+            { "key": "Source Deal|relation", "type": "relation", "relationValue": ["={{ $json.dealId }}"] },
+            { "key": "Status|select", "type": "select", "selectValue": "Not started" },
+            { "key": "SoW Status|select", "type": "select", "selectValue": "Drafted" },
+            { "key": "Type|select", "type": "select", "selectValue": "Client delivery" },
+            { "key": "Engagement Type|select", "type": "select", "selectValue": "={{ $json.engagementType }}" },
+            { "key": "Artefacts Requested|multi_select", "type": "multi_select", "multiSelectValue": ["SoW"] },
+            { "key": "Generate Artefacts|checkbox", "type": "checkbox", "checkboxValue": true },
+            { "key": "Notes|rich_text", "type": "rich_text", "textContent": "=SoW: {{ $json.sowUrl }}\nDeck: {{ $json.deckUrl }}\nGenerated from transcript: {{ $json.transcriptUrl }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9bed34df-9b6b-490d-aa41-6482f91e1219",
+      "name": "Create Notion Project",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [2352, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst docData = $('Combine Document URLs').first().json;\nconst notionData = $('Create Notion Project').first().json;\n\nconst notionProjectUrl = notionData.url || 'https://notion.so';\nconst slackChannelId = docData.slackChannelId || 'D0B3KBGM2CQ';\n\nconst slackMessage = ':page_facing_up: *Proposal generated for ' + docData.companyName + '*\\n' +\n  '*Engagement:* ' + docData.engagementTitle + '\\n' +\n  '*Contact:* ' + docData.contactName + '\\n' +\n  '*Deal stage:* ' + docData.dealStage + '\\n\\n' +\n  '*Documents generated:*\\n' +\n  '• <' + docData.sowUrl + '|Statement of Work>\\n' +\n  '• <' + docData.deckUrl + '|Pitch Deck>\\n' +\n  '• <' + notionProjectUrl + '|Notion Project>\\n\\n' +\n  '*Selected use cases:* ' + docData.selectedUseCaseNames + '\\n\\n' +\n  'Approve to send to client?';\n\nreturn [{\n  json: {\n    slackChannelId,\n    slackMessage,\n    notionProjectUrl,\n    ...docData\n  }\n}];\n"
+      },
+      "id": "6879fd34-1d3e-4797-ad54-40d7517d6ab8",
+      "name": "Prepare Slack Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2544, 400]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": { "__rl": true, "mode": "id", "value": "={{ $json.slackChannelId || \"D0B3KBGM2CQ\" }}" },
+        "message": "={{ $json.slackMessage }}",
+        "approvalOptions": { "values": { "approvalType": "double", "approveLabel": "Approve — Send to Client", "disapproveLabel": "Needs Revision" } },
+        "options": { "limitWaitTime": { "values": { "resumeAmount": 24 } }, "appendAttribution": false }
+      },
+      "id": "f766b2a1-2d64-423d-a31a-6ed52f8c8820",
+      "name": "Send Proposal for Approval",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [2752, 400],
+      "webhookId": "8efb1541-2444-490c-af83-ea19ca406a8c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 1 },
+          "conditions": [
+            { "leftValue": "={{ $('Meeting Router Call').first().json.slackChannelId }}", "operator": { "type": "string", "operation": "empty" }, "rightValue": "" }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "80243867-a455-4cb9-a8ae-93db54989453",
+      "name": "Needs Slack Channel?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [416, 400]
+    },
+    {
+      "parameters": {
+        "resource": "channel",
+        "channelId": "={{ 'nova-' + $('Meeting Router Call').first().json.companyName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 74) }}",
+        "channelVisibility": "private"
+      },
+      "id": "c5eb67c3-9f6f-404d-91a8-d6cc0dd95df2",
+      "name": "Create Company Channel",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [672, 176],
+      "webhookId": "3a75f1b8-5c18-4f9c-836a-e5dabfeab3a9"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $('Meeting Router Call').first().json.companyId }}" },
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Slack Channel ID|rich_text", "type": "rich_text", "textContent": "={{ $json.id }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a4a45e6d-2c14-494a-8db6-c65b4b2b2b2c",
+      "name": "Update Company Notion Channel",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [928, 192]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 1 },
+          "conditions": [
+            { "leftValue": "={{ $json.gDriveFolderUrl }}", "operator": { "type": "string", "operation": "empty" }, "rightValue": "" }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "41840897-41f9-479a-a3d4-81ea1593c207",
+      "name": "Needs Drive Folder?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1600, 400]
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Parse Claude Response').first().json.companyName }}",
+        "driveId": { "__rl": true, "mode": "list", "value": "My Drive" },
+        "folderId": { "__rl": true, "mode": "url", "value": "https://drive.google.com/drive/folders/0AAS-m7WwhZgpUk9PVA" },
+        "options": { "simplifyOutput": true }
+      },
+      "id": "f45dcb5d-c6b5-4f84-8de4-5a7394804d0e",
+      "name": "Create Client Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1744, 656]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $('Parse Claude Response').first().json.companyId }}" },
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "GDrive Folder URL|url", "type": "url", "urlValue": "={{ 'https://drive.google.com/drive/folders/' + $json.id }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9d587122-01e2-4e21-93af-9d6a62a754fc",
+      "name": "Update Company Drive Folder",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [2000, 656]
+    }
+  ],
+  "connections": {
+    "Query Use Case Library": { "main": [[{ "node": "Prepare Claude Prompt", "type": "main", "index": 0 }]] },
+    "Prepare Claude Prompt": { "main": [[{ "node": "Generate Proposal with Claude", "type": "main", "index": 0 }]] },
+    "Generate Proposal with Claude": { "main": [[{ "node": "Parse Claude Response", "type": "main", "index": 0 }]] },
+    "Create SoW Document": { "main": [[{ "node": "Create Pitch Deck", "type": "main", "index": 0 }]] },
+    "Create Pitch Deck": { "main": [[{ "node": "Combine Document URLs", "type": "main", "index": 0 }]] },
+    "Combine Document URLs": { "main": [[{ "node": "Create Notion Project", "type": "main", "index": 0 }]] },
+    "Create Notion Project": { "main": [[{ "node": "Prepare Slack Data", "type": "main", "index": 0 }]] },
+    "Prepare Slack Data": { "main": [[{ "node": "Send Proposal for Approval", "type": "main", "index": 0 }]] },
+    "Meeting Router Call": { "main": [[{ "node": "Needs Slack Channel?", "type": "main", "index": 0 }]] },
+    "Needs Slack Channel?": { "main": [[{ "node": "Create Company Channel", "type": "main", "index": 0 }], [{ "node": "Query Use Case Library", "type": "main", "index": 0 }]] },
+    "Create Company Channel": { "main": [[{ "node": "Update Company Notion Channel", "type": "main", "index": 0 }]] },
+    "Update Company Notion Channel": { "main": [[{ "node": "Query Use Case Library", "type": "main", "index": 0 }]] },
+    "Parse Claude Response": { "main": [[{ "node": "Needs Drive Folder?", "type": "main", "index": 0 }]] },
+    "Needs Drive Folder?": { "main": [[{ "node": "Create Client Folder", "type": "main", "index": 0 }], [{ "node": "Create SoW Document", "type": "main", "index": 0 }]] },
+    "Create Client Folder": { "main": [[{ "node": "Update Company Drive Folder", "type": "main", "index": 0 }]] },
+    "Update Company Drive Folder": { "main": [[{ "node": "Create SoW Document", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "availableInMCP": true, "binaryMode": "separate" },
+  "meta": { "aiBuilderAssisted": true, "builderVariant": "mcp", "templateCredsSetupCompleted": true },
+  "description": "Generates a sales proposal package: queries Notion Use Case Library, calls Claude Opus to select use cases and write SoW content, creates Google Docs SoW and Slides deck, creates Notion Project, then sends a Slack sendAndWait approval."
+}

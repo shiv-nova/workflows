@@ -1,0 +1,96 @@
+{
+  "name": "Use Case Batch Runner",
+  "nodes": [
+    {
+      "id": "fc0c174d-01fa-43df-9f5d-2b4298fd709f",
+      "name": "Overnight Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [0, 0],
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 23 * * *" }] }
+      }
+    },
+    {
+      "id": "12b3db22-88e6-43ba-bd2f-3083eb0e0197",
+      "name": "Get All Use Cases",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [224, 96],
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": { "__rl": true, "value": "3a0c6e0a-d0c9-466c-8be3-2dc100962359", "mode": "id" },
+        "returnAll": true,
+        "options": {},
+        "simple": false
+      }
+    },
+    {
+      "id": "698019e9-ba29-4af1-80e9-529fa313fa6b",
+      "name": "Generate Deck",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [672, 96],
+      "parameters": {
+        "workflowId": { "__rl": true, "value": "x6swh6aPvECDRJms", "mode": "id" },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": { "id": "={{ $json.id }}" },
+          "schema": [
+            { "id": "id", "displayName": "id", "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true }
+          ]
+        },
+        "mode": "each",
+        "options": {}
+      }
+    },
+    {
+      "id": "103656cd-7aac-4e3b-990b-d82968be5158",
+      "name": "Loop Use Cases",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [448, 96],
+      "parameters": { "options": {} }
+    },
+    {
+      "id": "f0ae8749-ca9a-4d29-b34f-f40fa01bd880",
+      "name": "Run Now",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 192],
+      "parameters": {}
+    },
+    {
+      "id": "fbf008a2-c63c-423b-ad4f-5f9d7e720e4c",
+      "name": "Only Missing Decks",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [336, 240],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 },
+          "conditions": [
+            {
+              "leftValue": "={{ !($json.properties && $json.properties.Deck && $json.properties.Deck.files && $json.properties.Deck.files.length > 0) }}",
+              "rightValue": "",
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Overnight Schedule": { "main": [[{ "node": "Get All Use Cases", "type": "main", "index": 0 }]] },
+    "Generate Deck": { "main": [[{ "node": "Loop Use Cases", "type": "main", "index": 0 }]] },
+    "Loop Use Cases": { "main": [[], [{ "node": "Generate Deck", "type": "main", "index": 0 }]] },
+    "Run Now": { "main": [[{ "node": "Get All Use Cases", "type": "main", "index": 0 }]] },
+    "Get All Use Cases": { "main": [[{ "node": "Only Missing Decks", "type": "main", "index": 0 }]] },
+    "Only Missing Decks": { "main": [[{ "node": "Loop Use Cases", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "availableInMCP": true },
+  "meta": { "aiBuilderAssisted": true, "builderVariant": "mcp" },
+  "description": "Fetches all use cases from the Notion library and generates a Google Slides deck for each one, processing sequentially one at a time. Runs nightly at 23:00 or on demand via manual trigger."
+}

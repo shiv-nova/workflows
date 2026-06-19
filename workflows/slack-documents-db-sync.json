@@ -1,0 +1,89 @@
+{
+  "name": "Slack → Documents DB Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Slack → Documents DB Sync\n\nWatches all workspace messages. When a message has a file attachment or Google Drive link, looks up the Company by Slack Channel ID and creates a 📄 Documents entry in Notion.\n\n**Before activating:**\n1. Authenticate Slack OAuth2 and Notion OAuth2\n2. Ensure Slack bot is invited to all customer channels\n3. Backfill Slack Channel IDs on Companies: Hensoldt, BMW, PoCo, ZF, Bosch",
+        "height": 200,
+        "width": 300
+      },
+      "id": "e8c558cc-eea6-4bba-804c-fd3528d82c6d",
+      "name": "Sticky Note e6356fa3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-48, -400]
+    },
+    {
+      "parameters": {
+        "trigger": ["message", "file_share"],
+        "watchWorkspace": true,
+        "options": { "resolveIds": true }
+      },
+      "id": "3bc355ae-5cc3-4a5a-9b8b-72b226b26baa",
+      "name": "Slack Message",
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "webhookId": "dacae224-61d2-4f12-97d6-838307f936a2"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const msg = $input.item.json;\nconst text = msg.text || '';\nconst files = msg.files || [];\nconst driveMatch = text.match(/https:\\/\\/(?:drive|docs)\\.google\\.com\\/[^\\s<>\"]+/);\nconst hasFile = files.length > 0;\nif (!driveMatch && !hasFile) return [];\nlet docUrl = '', docName = '', docType = 'Other';\nif (hasFile) {\n  const file = files[0];\n  docName = file.name || file.title || 'Untitled';\n  docUrl = file.permalink || file.url_private || '';\n  const n = docName.toLowerCase();\n  if (n.includes('proposal')) docType = 'Proposal';\n  else if (n.includes('contract') || n.includes('sow')) docType = 'Contract';\n  else if (n.includes('deck') || n.includes('slide') || n.endsWith('.pptx')) docType = 'Deck';\n  else if (n.includes('brief')) docType = 'Brief';\n} else {\n  docUrl = driveMatch[0];\n  const u = docUrl.toLowerCase();\n  if (u.includes('presentation')) docType = 'Deck';\n  else if (u.includes('proposal')) docType = 'Proposal';\n  const pathPart = docUrl.replace(/https:\\/\\/[^/]+\\//, '').split('/')[0];\n  docName = 'Drive: ' + pathPart.charAt(0).toUpperCase() + pathPart.slice(1);\n}\nconst senderName = msg.username || (msg.user_profile && msg.user_profile.display_name) || msg.user || '';\nconst channelName = msg.channel_name || msg.channel || '';\nconst date = msg.ts ? new Date(parseFloat(msg.ts) * 1000).toISOString().split('T')[0] : '';\nreturn [{ json: { docName, docUrl, docType, channelId: msg.channel, channelName, senderName, date } }];"
+      },
+      "id": "8b406c2d-b866-4645-b35b-f8b8ea8d6bdd",
+      "name": "Extract Doc Info",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [224, 0]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": { "__rl": true, "mode": "id", "value": "19bba828e94d4d2f919dddd2c6991302" },
+        "limit": 1,
+        "simple": false,
+        "filterType": "json",
+        "filterJson": "={{ JSON.stringify({ property: \"Slack Channel ID\", rich_text: { equals: $json.channelId } }) }}",
+        "options": {}
+      },
+      "id": "f1318e99-09b8-4b71-b1f4-8ac1a3083258",
+      "name": "Find Company by Channel",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [448, 0]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": { "__rl": true, "mode": "id", "value": "b962bb6e3e40433b9fb11dfbebd6661b" },
+        "title": "={{ $('Extract Doc Info').item.json.docName }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "URL|url", "type": "url", "ignoreIfEmpty": true, "urlValue": "={{ $('Extract Doc Info').item.json.docUrl }}" },
+            { "key": "Type|select", "type": "select", "selectValue": "={{ $('Extract Doc Info').item.json.docType }}" },
+            { "key": "Shared By|rich_text", "type": "rich_text", "textContent": "={{ $('Extract Doc Info').item.json.senderName }}" },
+            { "key": "Date|date", "type": "date", "date": "={{ $('Extract Doc Info').item.json.date }}" },
+            { "key": "Source Channel|rich_text", "type": "rich_text", "textContent": "={{ $('Extract Doc Info').item.json.channelName }}" },
+            { "key": "Company|relation", "type": "relation", "relationValue": ["={{ $json.url }}"] }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a77510e0-8215-4408-8990-7bf81eaaf778",
+      "name": "Create Document Entry",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [672, 0]
+    }
+  ],
+  "connections": {
+    "Slack Message": { "main": [[{ "node": "Extract Doc Info", "type": "main", "index": 0 }]] },
+    "Extract Doc Info": { "main": [[{ "node": "Find Company by Channel", "type": "main", "index": 0 }]] },
+    "Find Company by Channel": { "main": [[{ "node": "Create Document Entry", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "availableInMCP": true, "binaryMode": "separate" },
+  "meta": { "aiBuilderAssisted": true, "builderVariant": "mcp" },
+  "description": "Watches Slack messages workspace-wide; when a file or Drive link is shared in a customer channel, looks up the Company by Slack Channel ID and creates a Documents DB entry in Notion."
+}

@@ -1,0 +1,1276 @@
+{
+  "name": "Use Case Deck Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "event": "pagedUpdatedInDatabase",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "3a0c6e0a-d0c9-466c-8be3-2dc100962359",
+          "cachedResultName": "Use Case Library"
+        }
+      },
+      "id": "45edba40-f664-42a3-b227-555b984e727f",
+      "name": "Use Case Updated in Notion",
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1,
+      "position": [
+        224,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "get",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "simple": false
+      },
+      "id": "96bf08c8-07ca-4446-ad91-ddc9f7d35e7f",
+      "name": "Fetch Use Case Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-key",
+              "value": "=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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'claude-haiku-4-5-20251001', max_tokens: 4096, messages: [{ role: 'user', content: $json.prompt }] } }}",
+        "options": {}
+      },
+      "id": "b64f51d6-3146-4ec3-bc75-998eddfb65ce",
+      "name": "Generate Deck via Claude",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1168,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $(\"Fetch Use Case Page\").item.json.id }}"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Deck|files",
+              "type": "files",
+              "fileUrls": {
+                "fileUrl": [
+                  {
+                    "name": "={{ $('Prepare Slides Data').item.json.title }}",
+                    "url": "={{ 'https://docs.google.com/presentation/d/' + $('Create Presentation').item.json.presentationId + '/edit' }}"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cc78c713-9bd0-4076-91df-7c2480aa338d",
+      "name": "Attach Deck to Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        4896,
+        -128
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "3282ea57-e959-4a66-8906-ce615684be90",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "field-id",
+              "name": "id",
+              "value": "<__PLACEHOLDER_VALUE__Notion use case page UUID__>",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0edf8da6-036b-4ecc-b1f7-f4539324bcc1",
+      "name": "Set Page ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Use Case Deck Generator\n**Setup required:**\n1. Replace the folder ID placeholder in \"Save Deck to GDrive\" with your central GDrive folder ID\n2. Create an Anthropic API key credential (HTTP Bearer Auth → name it \"Anthropic API Key\")\n3. For manual runs: paste the Notion use case page UUID into \"Set Page ID\"",
+        "color": 2
+      },
+      "id": "586359dd-19dc-45ee-89e8-1dda80aa7aa2",
+      "name": "Sticky Note da230ba2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "prompt-field",
+              "name": "prompt",
+              "type": "string",
+              "value": "={{ 'You are the novagentica-use-case-library skill. Analyse the use case data below and return ONLY valid JSON (no markdown fences, no commentary) matching this schema exactly:\\n{\\n  \"title\": \"<use case name>\",\\n  \"vertical\": \"<vertical name e.g. Defence & Aerospace>\",\\n  \"slide1\": {\\n    \"eyebrow\": \"<VERTICAL · FUNCTION in caps>\",\\n    \"headline\": \"<declarative sentence, max 60 chars>\",\\n    \"subhead\": \"<short contrasting phrase>\",\\n    \"rows\": [{\"label\": \"<LABEL IN CAPS>\", \"body\": \"<1-2 sentences>\", \"italic\": \"<crimson closer or null>\"}],\\n    \"tagline\": \"<runtime and maturity note>\"\\n  },\\n  \"slide2\": {\\n    \"eyebrow\": \"<USE CASE · AGENT ARCHITECTURE>\",\\n    \"headline\": \"<agent name, max 45 chars>\",\\n    \"subhead\": \"<Domain to Outcome to key term>\",\\n    \"tiles\": [{\"num\": \"1\", \"title\": \"<STEP IN CAPS>\", \"body\": \"<max 120 chars>\"}],\\n    \"tagline\": \"<target systems>\"\\n  },\\n  \"slide3\": {\\n    \"eyebrow\": \"<THE ECONOMICS · CONCEPT caveat>\",\\n    \"headline\": \"<value figure with period, max 45 chars>\",\\n    \"subhead\": \"<maturity caveat>\",\\n    \"stacks\": [{\"num\": \"01\", \"label\": \"<METRIC IN CAPS>\", \"text\": \"<1-2 sentences>\", \"highlight\": true}],\\n    \"tagline\": \"<runtime, blast radius, MVP phase>\"\\n  }\\n}\\n\\nRules:\\n- slide1.rows exactly 3: THE GAP, THE CONSEQUENCE, THE UNLOCK. Set italic to null if not needed.\\n- slide2.tiles exactly 5 agent flow steps.\\n- slide3.stacks exactly 4: VALUE AT STAKE (highlight true), DEPLOYMENT, REPLICABILITY, BLAST RADIUS.\\n- slide1 headline max 60 chars. Slides 2 and 3 headlines max 45 chars.\\n- Maturity rule: never present Modelled as Live. For Concept omit specific monetary values.\\n\\nUse case data:\\n' + JSON.stringify($('Fetch Use Case Page').item.json) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f8d210e4-7979-418e-b274-848e7c54639e",
+      "name": "Prepare Claude Prompt",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $json.content[0].text;\nconst cleaned = raw.replace(/^```json\\s*/m, '').replace(/```\\s*$/m, '').trim();\nconst d = JSON.parse(cleaned);\n\nconst G = x => Math.round(x * 914400);\n\nconst MG = 0.50;\nconst CW = 9.00;\n\nconst Y_TR  = 0.28;\nconst Y_EYE = 0.36;\nconst EYE_H = 0.15;\nconst Y_HL  = 0.56;\nconst HL_H  = 0.44;\nconst Y_SH  = 1.06;\nconst SH_H  = 0.26;\nconst Y_MR  = 1.40;\nconst Y_CON = 1.56;\nconst Y_BR  = 4.95;\nconst CON_H = Y_BR - Y_CON;\nconst Y_TAG = 5.04;\nconst TAG_H = 0.18;\nconst Y_FOOT = 5.28;\nconst FOOT_H = 0.18;\n\nconst BG  = {red:0.980, green:0.984, blue:0.965};\nconst INK = {red:0.055, green:0.055, blue:0.047};\nconst ACC = {red:0.800, green:0.051, blue:0.173};\nconst MUT = {red:0.541, green:0.541, blue:0.525};\nconst RUL = {red:0.851, green:0.851, blue:0.824};\nconst WHT = {red:1, green:1, blue:1};\n\nlet _n = 0;\nconst uid = p => `nvg_${p}_${++_n}`;\nlet _page = '';\n\nfunction mkTBox(id, x, y, w, h) {\n  return { createShape: {\n    objectId: id, shapeType: 'TEXT_BOX',\n    elementProperties: {\n      pageObjectId: _page,\n      size: { width:{magnitude:G(w),unit:'EMU'}, height:{magnitude:G(h),unit:'EMU'} },\n      transform: { scaleX:1, scaleY:1, translateX:G(x), translateY:G(y), unit:'EMU' }\n    }\n  }};\n}\n\nfunction mkRect(id, x, y, w, h) {\n  return { createShape: {\n    objectId: id, shapeType: 'RECTANGLE',\n    elementProperties: {\n      pageObjectId: _page,\n      size: { width:{magnitude:G(w),unit:'EMU'}, height:{magnitude:G(h),unit:'EMU'} },\n      transform: { scaleX:1, scaleY:1, translateX:G(x), translateY:G(y), unit:'EMU' }\n    }\n  }};\n}\n\nfunction transparent(id) {\n  return { updateShapeProperties: {\n    objectId: id, fields: 'shapeBackgroundFill,outline',\n    shapeProperties: {\n      shapeBackgroundFill: { propertyState: 'NOT_RENDERED' },\n      outline: { propertyState: 'NOT_RENDERED' }\n    }\n  }};\n}\n\nfunction solidFill(id, fillRgb, lineRgb, lineEmu) {\n  const sp = { shapeBackgroundFill: { solidFill: { color: { rgbColor: fillRgb } } } };\n  sp.outline = lineRgb\n    ? { outlineFill: { solidFill: { color: { rgbColor: lineRgb } } }, weight: {magnitude: lineEmu||2000, unit:'EMU'} }\n    : { propertyState: 'NOT_RENDERED' };\n  return { updateShapeProperties: {\n    objectId: id, fields: 'shapeBackgroundFill,outline',\n    shapeProperties: sp\n  }};\n}\n\nfunction valignMiddle(id) {\n  return { updateShapeProperties: {\n    objectId: id, fields: 'contentAlignment',\n    shapeProperties: { contentAlignment: 'MIDDLE' }\n  }};\n}\n\nfunction insText(id, text) {\n  return { insertText: { objectId: id, insertionIndex: 0, text } };\n}\n\nfunction txStyle(id, rgb, pt, bold, italic, font, si, ei) {\n  const range = (si !== undefined && ei !== undefined)\n    ? { type: 'FIXED_RANGE', startIndex: si, endIndex: ei }\n    : { type: 'ALL' };\n  return { updateTextStyle: {\n    objectId: id, textRange: range,\n    fields: 'foregroundColor,fontSize,bold,italic,fontFamily',\n    style: {\n      foregroundColor: { opaqueColor: { rgbColor: rgb } },\n      fontSize: { magnitude: pt, unit: 'PT' },\n      bold: !!bold, italic: !!italic,\n      fontFamily: font || 'Inter'\n    }\n  }};\n}\n\nfunction paraStyle(id, align) {\n  return { updateParagraphStyle: {\n    objectId: id, textRange: { type: 'ALL' },\n    fields: 'alignment,spaceAbove,spaceBelow',\n    style: { alignment: align || 'START',\n             spaceAbove: {magnitude:0,unit:'PT'},\n             spaceBelow: {magnitude:0,unit:'PT'} }\n  }};\n}\n\nfunction setBg(pageId) {\n  return { updatePageProperties: {\n    objectId: pageId, fields: 'pageBackgroundFill',\n    pageProperties: { pageBackgroundFill: { solidFill: { color: { rgbColor: BG } } } }\n  }};\n}\n\nfunction addText(x, y, w, h, text, rgb, pt, bold, italic, font, align) {\n  const id = uid('t');\n  return [mkTBox(id, x, y, w, h), transparent(id), insText(id, text),\n          txStyle(id, rgb, pt, bold, italic, font), paraStyle(id, align || 'START')];\n}\n\nfunction hRule(y) {\n  const id = uid('hr');\n  return [mkRect(id, MG, y, CW, 0.004), solidFill(id, RUL, null)];\n}\nfunction tRule(y) {\n  const id = uid('tr');\n  return [mkRect(id, MG, y, CW, 0.002), solidFill(id, RUL, null)];\n}\n\nfunction slideHeader(eyebrow, headline, hlPt, subhead) {\n  const r = [];\n  r.push(...hRule(Y_TR));\n  r.push(...addText(MG, Y_EYE, CW, EYE_H, eyebrow.toUpperCase(), MUT, 10, true, false, 'Inter', 'START'));\n  r.push(...addText(MG, Y_HL,  CW, HL_H,  headline,              INK, hlPt, true, false, 'Inter', 'START'));\n  r.push(...addText(MG, Y_SH,  CW, SH_H,  subhead,               ACC, 13, true, true, 'Georgia', 'START'));\n  r.push(...hRule(Y_MR));\n  return r;\n}\n\nfunction footerRow(pg, total) {\n  const r = [];\n  const wmId = uid('wm');\n  r.push(mkTBox(wmId, MG, Y_FOOT, 2.0, FOOT_H));\n  r.push(transparent(wmId));\n  r.push(insText(wmId, 'novagentica'));\n  r.push(txStyle(wmId, INK, 11, true, false, 'Inter', 0, 4));\n  r.push(txStyle(wmId, ACC, 11, true, false, 'Inter', 4, 11));\n  r.push(paraStyle(wmId, 'START'));\n\n  const pnId = uid('pn');\n  const pStr = String(pg).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');\n  r.push(mkTBox(pnId, MG + CW - 1.2, Y_FOOT, 1.2, FOOT_H));\n  r.push(transparent(pnId));\n  r.push(insText(pnId, pStr));\n  r.push(txStyle(pnId, MUT, 10, false, false, 'Inter'));\n  r.push(paraStyle(pnId, 'END'));\n  return r;\n}\n\nconst reqs = [];\nconst TOTAL = 3;\nconst PG1 = 'slide_opp', PG2 = 'slide_agt', PG3 = 'slide_eco';\n\n// SLIDE 1\nreqs.push({ createSlide: { objectId: PG1, insertionIndex: 0,\n  slideLayoutReference: { predefinedLayout: 'BLANK' } } });\nreqs.push(setBg(PG1));\n_page = PG1;\nreqs.push(...slideHeader(d.slide1.eyebrow, d.slide1.headline, 22, d.slide1.subhead));\n\nconst rows = d.slide1.rows;\nconst ROW_H   = (CON_H - 0.12) / rows.length;\nconst ROW_GAP = 0.06;\nconst LBL_W   = 1.55;\nconst BODY_X  = MG + LBL_W + 0.14;\nconst BODY_W  = CW - LBL_W - 0.14;\n\nrows.forEach((row, i) => {\n  const ry = Y_CON + i * ROW_H;\n  reqs.push(...addText(MG, ry + 0.06, LBL_W, ROW_H - 0.06,\n    row.label.toUpperCase(), MUT, 10, true, false, 'Inter', 'START'));\n\n  const bodyFull = row.body + (row.italic ? '\\n' + row.italic : '');\n  const bId = uid('rb');\n  reqs.push(mkTBox(bId, BODY_X, ry + 0.05, BODY_W, ROW_H - ROW_GAP));\n  reqs.push(transparent(bId));\n  reqs.push(insText(bId, bodyFull));\n  reqs.push(txStyle(bId, INK, 11, false, false, 'Georgia', 0, row.body.length));\n  if (row.italic) {\n    reqs.push(txStyle(bId, ACC, 11, true, true, 'Georgia', row.body.length + 1, bodyFull.length));\n  }\n  reqs.push(paraStyle(bId, 'START'));\n\n  if (i < rows.length - 1) reqs.push(...tRule(ry + ROW_H - ROW_GAP / 2));\n});\n\nreqs.push(...hRule(Y_BR));\nreqs.push(...addText(MG, Y_TAG, CW, TAG_H, d.slide1.tagline, MUT, 11, false, true, 'Georgia', 'START'));\nreqs.push(...footerRow(1, TOTAL));\n\n// SLIDE 2\nreqs.push({ createSlide: { objectId: PG2, insertionIndex: 1,\n  slideLayoutReference: { predefinedLayout: 'BLANK' } } });\nreqs.push(setBg(PG2));\n_page = PG2;\nreqs.push(...slideHeader(d.slide2.eyebrow, d.slide2.headline, 26, d.slide2.subhead));\n\nconst tiles = d.slide2.tiles;\nconst N    = tiles.length;\nconst TGAP = 0.10;\nconst TW   = (CW - TGAP * (N - 1)) / N;\nconst TH   = CON_H - 0.05;\nconst TPAD = 0.12;\nconst BADGE = 0.32;\n\ntiles.forEach((tile, i) => {\n  const tx = MG + i * (TW + TGAP);\n  const ty = Y_CON;\n\n  const tileId = uid('tile');\n  reqs.push(mkRect(tileId, tx, ty, TW, TH));\n  reqs.push(solidFill(tileId, BG, RUL, 2000));\n\n  const badgeId = uid('bdg');\n  reqs.push(mkRect(badgeId, tx + TPAD, ty + TPAD, BADGE, BADGE));\n  reqs.push(solidFill(badgeId, ACC, null));\n\n  const numId = uid('bnum');\n  reqs.push(mkTBox(numId, tx + TPAD, ty + TPAD, BADGE, BADGE));\n  reqs.push(transparent(numId));\n  reqs.push(valignMiddle(numId));\n  reqs.push(insText(numId, tile.num));\n  reqs.push(txStyle(numId, WHT, 14, true, false, 'Inter'));\n  reqs.push(paraStyle(numId, 'CENTER'));\n\n  const titleY = ty + TPAD + BADGE + 0.10;\n  reqs.push(...addText(tx + TPAD, titleY, TW - TPAD, 0.22,\n    tile.title.toUpperCase(), INK, 10, true, false, 'Inter', 'START'));\n\n  const bodyY = titleY + 0.52;\n  const bodyH = TH - (bodyY - ty) - 0.10;\n  reqs.push(...addText(tx + TPAD, bodyY, TW - TPAD, bodyH,\n    tile.body, INK, 11, false, false, 'Georgia', 'START'));\n});\n\nreqs.push(...hRule(Y_BR));\nreqs.push(...addText(MG, Y_TAG, CW, TAG_H, d.slide2.tagline, MUT, 11, false, true, 'Georgia', 'START'));\nreqs.push(...footerRow(2, TOTAL));\n\n// SLIDE 3\nreqs.push({ createSlide: { objectId: PG3, insertionIndex: 2,\n  slideLayoutReference: { predefinedLayout: 'BLANK' } } });\nreqs.push(setBg(PG3));\n_page = PG3;\nreqs.push(...slideHeader(d.slide3.eyebrow, d.slide3.headline, 26, d.slide3.subhead));\n\nconst stacks = d.slide3.stacks;\nconst SH   = (CON_H - 0.10) / stacks.length;\nconst NUMW = 0.70;\nconst LX   = MG + NUMW + 0.12;\nconst LW   = CW - NUMW - 0.12;\n\nstacks.forEach((row, i) => {\n  const sy = Y_CON + i * SH;\n  const nc = row.highlight ? ACC : MUT;\n\n  const nId = uid('sn');\n  reqs.push(mkTBox(nId, MG, sy, NUMW, SH));\n  reqs.push(transparent(nId));\n  reqs.push(valignMiddle(nId));\n  reqs.push(insText(nId, row.num));\n  reqs.push(txStyle(nId, nc, 20, true, false, 'Inter'));\n  reqs.push(paraStyle(nId, 'START'));\n\n  reqs.push(...addText(LX, sy + 0.07, LW, 0.22,\n    row.label.toUpperCase(), INK, 10, true, false, 'Inter', 'START'));\n\n  reqs.push(...addText(LX, sy + 0.32, LW, SH - 0.38,\n    row.text, INK, 11, false, false, 'Georgia', 'START'));\n\n  if (i < stacks.length - 1) reqs.push(...tRule(sy + SH - 0.02));\n});\n\nreqs.push(...hRule(Y_BR));\nreqs.push(...addText(MG, Y_TAG, CW, TAG_H, d.slide3.tagline, MUT, 11, false, true, 'Georgia', 'START'));\nreqs.push(...footerRow(3, TOTAL));\n\nconst vertical = d.vertical || d.slide1.eyebrow.split('·')[0].replace(/\\s+/g, ' ').trim();\nconst title = d.title || d.slide1.headline;\nreturn { requests: reqs, title: vertical + ' — ' + title, vertical };"
+      },
+      "id": "68949f52-b19a-4a80-bdc2-b57170687adc",
+      "name": "Prepare Slides Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slides.googleapis.com/v1/presentations",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { title: $('Prepare Slides Data').item.json.title } }}",
+        "options": {}
+      },
+      "id": "5539a1aa-ea6b-4afd-bdb9-167d3b9528c9",
+      "name": "Create Presentation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3888,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://slides.googleapis.com/v1/presentations/' + $('Create Presentation').item.json.presentationId + ':batchUpdate' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSlidesOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { requests: [{ deleteObject: { objectId: $('Create Presentation').item.json.slides[0].objectId } }].concat($('Prepare Slides Data').item.json.requests) } }}",
+        "options": {}
+      },
+      "id": "4cab3806-88b7-4bb9-8cec-50a440d511a6",
+      "name": "Populate Slides",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        4608,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "id": "dab39464-acaf-4c92-ba14-2d1e0b1e6866",
+      "name": "Rate Limit Delay",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        128
+      ],
+      "webhookId": "80cf02cb-121a-4c8a-9677-dcba43b919fd"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://www.googleapis.com/drive/v3/files/' + $('Create Presentation').item.json.presentationId + '?addParents=' + $('Normalize Folder ID').item.json.folderId + '&removeParents=root&supportsAllDrives=true' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "options": {}
+      },
+      "id": "e6e66b97-1ddd-4df5-a18f-573913c8ccee",
+      "name": "Move to Shared Drive",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        4256,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ 'name = \\'' + $json.vertical + '\\' and mimeType = \\'application/vnd.google-apps.folder\\' and \\'0AMdoTeqWu05eUk9PVA\\' in parents and trashed = false' }}"
+            },
+            {
+              "name": "supportsAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "includeItemsFromAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "fields",
+              "value": "files(id,name)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2885ed70-9b97-44d8-80d6-eed6ac3a398e",
+      "name": "Search Vertical Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1744,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "folder-check",
+              "leftValue": "={{ ($json.files || []).length }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "eb2b1b26-96f3-415a-a216-514c1d789a00",
+      "name": "Route Folder Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1984,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fid1",
+              "name": "folderId",
+              "type": "string",
+              "value": "={{ $json.files[0].id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "07806f66-2a2c-4d52-8c9b-d57e6bd535c1",
+      "name": "Set Folder ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2304,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/drive/v3/files?supportsAllDrives=true",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { name: $('Prepare Slides Data').item.json.vertical, mimeType: 'application/vnd.google-apps.folder', parents: ['0AMdoTeqWu05eUk9PVA'] } }}",
+        "options": {}
+      },
+      "id": "5679790a-7c9d-4d92-991f-cfb89ae0bc68",
+      "name": "Create Vertical Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2304,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fid2",
+              "name": "folderId",
+              "type": "string",
+              "value": "={{ $json.folderId ?? $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "91c24999-19b8-4b11-a620-828bcff4b3a6",
+      "name": "Normalize Folder ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2544,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ 'name = \\'' + $('Prepare Slides Data').item.json.title + '\\' and mimeType = \\'application/vnd.google-apps.presentation\\' and \\'' + $json.folderId + '\\' in parents and trashed = false' }}"
+            },
+            {
+              "name": "supportsAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "includeItemsFromAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "fields",
+              "value": "files(id,name)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1be9a896-e7e8-4c10-b4ba-1f28782e4797",
+      "name": "Search Existing Deck",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2768,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "deck-check",
+              "leftValue": "={{ ($json.files || []).length }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0b8c8ebe-9144-496f-b82a-6066beffe2a1",
+      "name": "Route Deck Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2976,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://www.googleapis.com/drive/v3/files/' + $json.files[0].id + '?supportsAllDrives=true' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { name: $('Prepare Slides Data').item.json.title + ' (archived ' + $now.toFormat('yyyy-MM-dd') + ')' } }}",
+        "options": {}
+      },
+      "id": "e449fd44-fdf6-4e23-835d-1ec111b7e211",
+      "name": "Archive Previous Deck",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3136,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ 'name = \\'Archive\\' and mimeType = \\'application/vnd.google-apps.folder\\' and \\'' + $('Normalize Folder ID').item.json.folderId + '\\' in parents and trashed = false' }}"
+            },
+            {
+              "name": "supportsAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "includeItemsFromAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "fields",
+              "value": "files(id,name)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "db111127-ef59-41de-932f-d3561260d385",
+      "name": "Search Archive Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3440,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "archive-folder-check",
+              "leftValue": "={{ ($json.files || []).length }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8e3ee7e7-fc41-4810-83c0-d8f2f4b5bb5a",
+      "name": "Route Archive Folder?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3664,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "afid1",
+              "name": "archiveFolderId",
+              "type": "string",
+              "value": "={{ $json.files[0].id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2056e434-81d4-4ee3-bdf7-ab275a58ffbd",
+      "name": "Set Archive Folder ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3888,
+        -608
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/drive/v3/files?supportsAllDrives=true",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { name: 'Archive', mimeType: 'application/vnd.google-apps.folder', parents: [$('Normalize Folder ID').item.json.folderId] } }}",
+        "options": {}
+      },
+      "id": "5d65726a-9128-4a97-b2f9-6e7971473e7d",
+      "name": "Create Archive Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3888,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "afid2",
+              "name": "archiveFolderId",
+              "type": "string",
+              "value": "={{ $json.archiveFolderId ?? $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "851a6fdf-4e1b-40ed-b57b-cc84605a5676",
+      "name": "Normalize Archive Folder ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4112,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://www.googleapis.com/drive/v3/files/' + $('Search Existing Deck').item.json.files[0].id + '?addParents=' + $json.archiveFolderId + '&removeParents=' + $('Normalize Folder ID').item.json.folderId + '&supportsAllDrives=true' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "options": {}
+      },
+      "id": "1ab97006-8697-460c-b2a2-49945f14b45a",
+      "name": "Move to Archive Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        4320,
+        -480
+      ]
+    },
+    {
+      "id": "fc8c597c-1140-451c-9308-2341b1cf0206",
+      "name": "Batch Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        432
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c220b02b-e12c-4411-8dc4-aa34c55e91f3",
+      "name": "Guard Deck JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        340
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Defensive parse: a malformed Claude response must not halt the batch.\ntry {\n  const raw = $json.content[0].text;\n  const cleaned = raw.replace(/^```json\\s*/m, '').replace(/```\\s*$/m, '').trim();\n  JSON.parse(cleaned);\n  return $input.item; // valid JSON -> pass the original item through unchanged\n} catch (err) {\n  let pageId = null, useCase = null;\n  try {\n    const fp = $('Fetch Use Case Page').item.json;\n    pageId = fp.id || null;\n    useCase = fp.name || fp.property_use_case || null;\n  } catch (e) {}\n  const snippet = (($json.content && $json.content[0] && $json.content[0].text) || '').slice(0, 600);\n  return { json: { _parseError: true, errorMsg: err.message, useCase: useCase, pageId: pageId, snippet: snippet } };\n}"
+      }
+    },
+    {
+      "id": "cf27dc44-f38a-45f4-b4ba-8ef0301eb9af",
+      "name": "Deck Data OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1500,
+        340
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._parseError }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "4a1e5260-e795-4618-bdf2-a416fef62bca",
+      "name": "Alert Deck Failure",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1720,
+        460
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "message",
+        "operation": "post",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "id",
+          "value": "U0B29K2JFEK"
+        },
+        "messageType": "text",
+        "text": "=:rotating_light: *Use Case Deck generation failed*\n\n*Use case:* {{ $json.useCase || $json.pageId || 'unknown' }}\n*Notion page ID:* {{ $json.pageId || 'n/a' }}\n*Error:* {{ $json.errorMsg }}\n\n*Claude output (truncated):*\n{{ $json.snippet }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": true
+        }
+      },
+      "webhookId": "55418cc5-65aa-4928-892a-182d6215f7dd"
+    },
+    {
+      "id": "261f6c3e-1eaa-4b49-9893-9b26b3a47fc3",
+      "name": "Return Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5120,
+        -128
+      ],
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "useCase",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "deckUrl",
+              "value": "={{ $json.property_deck ? $json.property_deck[0] : '' }}",
+              "type": "string"
+            },
+            {
+              "id": "s4",
+              "name": "ok",
+              "value": "={{ true }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "f8b39367-0bb7-4e6d-aea6-fa587e5188af",
+      "name": "Generate Deck Retry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1500,
+        560
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-key",
+              "value": "=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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'claude-haiku-4-5-20251001', max_tokens: 4096, messages: [{ role: 'user', content: $('Prepare Claude Prompt').item.json.prompt }] } }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "1d2b9783-d66b-4807-aaf4-424a0852935f",
+      "name": "Guard Deck JSON Retry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1700,
+        560
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Defensive parse on the retry response.\ntry {\n  const raw = $json.content[0].text;\n  const cleaned = raw.replace(/^```json\\s*/m, '').replace(/```\\s*$/m, '').trim();\n  JSON.parse(cleaned);\n  return $input.item;\n} catch (err) {\n  let pageId = null, useCase = null;\n  try {\n    const fp = $('Fetch Use Case Page').item.json;\n    pageId = fp.id || null;\n    useCase = fp.name || fp.property_use_case || null;\n  } catch (e) {}\n  const snippet = (($json.content && $json.content[0] && $json.content[0].text) || '').slice(0, 600);\n  return { json: { _parseError: true, errorMsg: 'Retry also failed: ' + err.message, useCase: useCase, pageId: pageId, snippet: snippet } };\n}"
+      }
+    },
+    {
+      "id": "47e42e9f-ccd9-4def-a529-18cef1b6da9e",
+      "name": "Deck Data OK? Retry",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1900,
+        560
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._parseError }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Use Case Updated in Notion": {
+      "main": [
+        [
+          {
+            "node": "Fetch Use Case Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Page ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Page ID": {
+      "main": [
+        [
+          {
+            "node": "Fetch Use Case Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Use Case Page": {
+      "main": [
+        [
+          {
+            "node": "Prepare Claude Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Populate Slides": {
+      "main": [
+        [
+          {
+            "node": "Attach Deck to Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Claude Prompt": {
+      "main": [
+        [
+          {
+            "node": "Rate Limit Delay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limit Delay": {
+      "main": [
+        [
+          {
+            "node": "Generate Deck via Claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Presentation": {
+      "main": [
+        [
+          {
+            "node": "Move to Shared Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move to Shared Drive": {
+      "main": [
+        [
+          {
+            "node": "Populate Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Slides Data": {
+      "main": [
+        [
+          {
+            "node": "Search Vertical Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Vertical Folder": {
+      "main": [
+        [
+          {
+            "node": "Route Folder Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Folder Exists?": {
+      "main": [
+        [
+          {
+            "node": "Set Folder ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Vertical Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Folder ID": {
+      "main": [
+        [
+          {
+            "node": "Normalize Folder ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Vertical Folder": {
+      "main": [
+        [
+          {
+            "node": "Normalize Folder ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Folder ID": {
+      "main": [
+        [
+          {
+            "node": "Search Existing Deck",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Existing Deck": {
+      "main": [
+        [
+          {
+            "node": "Route Deck Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Deck Exists?": {
+      "main": [
+        [
+          {
+            "node": "Archive Previous Deck",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Presentation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archive Previous Deck": {
+      "main": [
+        [
+          {
+            "node": "Search Archive Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Archive Folder": {
+      "main": [
+        [
+          {
+            "node": "Route Archive Folder?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Archive Folder?": {
+      "main": [
+        [
+          {
+            "node": "Set Archive Folder ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Archive Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Archive Folder ID": {
+      "main": [
+        [
+          {
+            "node": "Normalize Archive Folder ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Archive Folder": {
+      "main": [
+        [
+          {
+            "node": "Normalize Archive Folder ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Archive Folder ID": {
+      "main": [
+        [
+          {
+            "node": "Move to Archive Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move to Archive Folder": {
+      "main": [
+        [
+          {
+            "node": "Create Presentation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Use Case Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Deck via Claude": {
+      "main": [
+        [
+          {
+            "node": "Guard Deck JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard Deck JSON": {
+      "main": [
+        [
+          {
+            "node": "Deck Data OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deck Data OK?": {
+      "main": [
+        [
+          {
+            "node": "Generate Deck Retry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Slides Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Deck to Notion": {
+      "main": [
+        [
+          {
+            "node": "Return Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Deck Retry": {
+      "main": [
+        [
+          {
+            "node": "Guard Deck JSON Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard Deck JSON Retry": {
+      "main": [
+        [
+          {
+            "node": "Deck Data OK? Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deck Data OK? Retry": {
+      "main": [
+        [
+          {
+            "node": "Alert Deck Failure",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Slides Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "description": "Generates a 3-slide use case deck via Claude when a Notion Use Case Library entry is created or updated, saves it to a central Google Drive folder, and attaches the file link back to the Notion record's Deck property."
+}
