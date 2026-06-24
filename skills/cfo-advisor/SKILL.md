@@ -3,7 +3,7 @@ name: cfo-advisor
 description: "Financial leadership for startups and scaling companies. Financial modeling, unit economics, fundraising strategy, cash management, and board financial packages. Use when building financial models, analyzing unit economics, planning fundraising, managing cash runway, preparing board materials, or when user mentions CFO, burn rate, runway, fundraising, unit economics, LTV, CAC, term sheets, or financial strategy."
 license: MIT
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   author: Alireza Rezvani
   category: c-level
   domain: cfo-leadership
