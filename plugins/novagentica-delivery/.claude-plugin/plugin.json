@@ -1,5 +1,6 @@
 {
   "name": "novagentica-delivery",
+  "displayName": "Novagentica Delivery",
   "description": "Produce client-facing delivery artefacts — Gantt charts, deployment timelines, SoW, RACI matrices, and governance docs.",
   "version": "1.0.0",
   "author": {
