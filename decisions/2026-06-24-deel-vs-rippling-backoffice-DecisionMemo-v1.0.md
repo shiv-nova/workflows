@@ -1,6 +1,6 @@
 # Decision Memo: Choose Deel or Rippling as the single managed vendor for Novagentica's HR·IT·EOR·Payroll stack (3→30 ramp, 2-yr term)
 
-**Status:** DECIDED — Deel (recorded 2026-06-24)
+**Status:** DECIDED — Deel selected (2026-06-24); counter-signature gated on §12 diligence. Two-model cross-eval (CrossEval v3 — Claude + Gemini): 🟡 PAUSE — vendor confirmed by both models; clear the four diligence items (security-ops, implementation references, DE country fee, device-lease terms) before signing.
 **Owner:** Shiv Tailor      **Date:** 2026-06-24      **Decide by:** 2026-07-03 (before Stage-1 onboarding, Jul–Dec 26; pre-signature is peak leverage)
 **Reversibility:** Type-1 (expensive/painful to reverse) — cost-to-reverse: re-migrating HR + identity + payroll + device fleet off one platform mid-contract; the risk model rates switching cost "huge" once all four pillars + data + devices are live; Rippling auto-renews (worst case for exit); plus a 2-year commitment.
 **Depends on / relates to:** The 7 modelling decisions already locked (ramp 3→30; ~50% EOR; single-vendor scope, no internal IT; Rippling EOR discount locked full term; 2-yr term; model both FX). This memo decides the vendor *within* that locked scope; it does not re-open the consolidation scope except via the null option.
