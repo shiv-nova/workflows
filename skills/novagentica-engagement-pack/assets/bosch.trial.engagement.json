@@ -1,0 +1,150 @@
+{
+  "//SOURCE": "Rebuilt from Notion: 'Bosch — Procurement Domain · Dual-Track MVP' (3847228d) + Order Form NVG-OF-2026-001 (3877228d). Real use cases + commercials. Still TRIAL of the v2 pack. Flagged: per-track day split is [EST — OF says split TBC]; co-investment derived at EUR 2,500/day = 50k vs OF's approx ~55k (source approximate; day rate recorded as CHF 2,500 under an EUR deal — confirm).",
+  "client": {
+    "name": "Bosch",
+    "legalEntity": "Robert Bosch GmbH",
+    "industry": "Automotive & industrial technology",
+    "sponsor": "[TBC]",
+    "mainContact": "Thomas — project lead (Bosch)",
+    "domainLeads": [
+      "Procurement (Bosch)"
+    ],
+    "systems": [
+      "Microsoft Copilot Studio",
+      "SAP (Joule; module TBC)",
+      "Pilum (integration)",
+      "LangGraph"
+    ]
+  },
+  "nova": {
+    "deliveryLead": "Shiv Tailor",
+    "commercialLead": "Felix Bühner",
+    "founder": "Martin"
+  },
+  "sources": {
+    "transcript": "Bosch deal/project records (Notion)",
+    "fitDeck": "Bosch — Procurement Domain · Dual-Track MVP (Notion)"
+  },
+  "commercials": {
+    "currency": "EUR",
+    "dayRate": 2500,
+    "services": [
+      {
+        "id": "delivery",
+        "name": "Professional services — dual-track delivery (co-invested)",
+        "deliveryModel": "Novagentica-built (Hybrid)",
+        "pricingMode": "free-partnership",
+        "dayRate": 2500,
+        "consultants": 1,
+        "note": "20 delivery-support days, co-invested by Novagentica and blended into the Reduced Initial Commitment. Per-track split [EST — TBC]. Limited risk on both tracks.",
+        "stages": [
+          {
+            "id": "Track 1",
+            "title": "Reverse-engineering — 4 Copilot Studio agents",
+            "oneLiner": "Govern 4 existing Copilot Studio agents in place — no rebuild.",
+            "agentDoes": "Inventory & select; reverse-engineer Charter, Decision Contract, authority mapping, Crypto Passport; gap-improve each; integrate Execution Gateway; QA; redeploy + monitoring.",
+            "gatedAction": "Every agent Crypto Passport-signed — no execution without a passport.",
+            "kpis": "4 governed agents live and audit-ready by Week 5.",
+            "aiActClass": "Limited risk",
+            "runtimeSystems": "Microsoft Copilot Studio",
+            "status": "confirmed",
+            "isBackup": false,
+            "blastRadius": 2,
+            "elapsedWeeks": 5,
+            "days": 8,
+            "timeline": {
+              "startWeek": "W1",
+              "endWeek": "W5",
+              "liveWeek": "W5",
+              "gate": null
+            }
+          },
+          {
+            "id": "Track 2",
+            "title": "Greenfield — Sample Part Ordering agent",
+            "oneLiner": "Build a new sample-part-ordering agent on Pilum + SAP under enforced authority.",
+            "agentDoes": "Discovery & process design; agent design (Charter, DC, authority, Agent Pack); core build; Pilum + SAP integration; internal QA; UAT; defect resolution; CDAP™ activation.",
+            "gatedAction": "Crypto Passport-signed; out-of-policy escalated.",
+            "kpis": "Sample part ordering automated end-to-end, live by Week 8.",
+            "aiActClass": "Limited risk",
+            "runtimeSystems": "Pilum + SAP (Track 2 runtime election LangGraph vs Copilot Studio — TBC at kickoff)",
+            "status": "confirmed",
+            "isBackup": false,
+            "blastRadius": 2,
+            "elapsedWeeks": 8,
+            "days": 12,
+            "timeline": {
+              "startWeek": "W1",
+              "endWeek": "W8",
+              "liveWeek": "W8",
+              "gate": null
+            }
+          }
+        ]
+      }
+    ],
+    "licence": {
+      "term": {
+        "initialMonths": 12,
+        "renewal": "auto, equal periods unless 90 days' notice"
+      },
+      "domainDefinition": "Domain tier · Procurement domain · 5 agents in scope.",
+      "introOffer": {
+        "enabled": false
+      }
+    },
+    "tierFootnote": "Reduced Initial Commitment recommended. Part A / Part B (licence vs delivery) split confirmed at contracting.",
+    "runtimes": [
+      "Microsoft Copilot Studio",
+      "SAP Joule",
+      "LangGraph"
+    ],
+    "options": [
+      {
+        "id": "ric",
+        "name": "Reduced Initial Commitment",
+        "recommended": true,
+        "customerPaysYear1": 110000,
+        "term": {
+          "initialMonths": 12,
+          "renewal": "auto, equal periods unless 90 days' notice"
+        },
+        "deliveryDays": 20,
+        "coInvestment": 55000,
+        "totalValueYear1": 165000,
+        "note": "Blended Domain licence + 20 delivery-support days."
+      },
+      {
+        "id": "sp",
+        "name": "Strategic Partnership",
+        "customerPaysYear1": 165000,
+        "term": {
+          "initialMonths": 36
+        },
+        "deliveryDays": null,
+        "coInvestment": null,
+        "totalValueYear1": null,
+        "note": "Deeper commitment; delivery scope TBC."
+      }
+    ]
+  },
+  "procurement": {
+    "routes": [
+      "Direct from Novagentica — Procurement (Bosch)."
+    ]
+  },
+  "dates": {
+    "sponsorMeeting": "[TBC]",
+    "kickoffAnchor": "end June / first week July 2026",
+    "firstValue": "Track 1 live Week 5; Track 2 live Week 8",
+    "gate": null
+  },
+  "output": {
+    "fileStem": "Novagentica-Bosch",
+    "version": "0.4-TRIAL",
+    "artefacts": [
+      "summary"
+    ],
+    "formats": "PPTX"
+  }
+}

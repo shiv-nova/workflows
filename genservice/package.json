@@ -1,0 +1,13 @@
+{
+  "name": "nvg-genservice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HTTP wrapper over canonical Novagentica document generators (one source of truth for n8n).",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pptxgenjs": "^3.12.0",
+    "docx": "^8.5.0"
+  }
+}

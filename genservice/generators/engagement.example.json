@@ -1,0 +1,589 @@
+{
+  "client": {
+    "name": "Hensoldt",
+    "legalEntity": "Hensoldt [legal entity TBC]",
+    "industry": "Defence electronics",
+    "sponsor": "Andre [TBC] — sponsor",
+    "mainContact": "Alex R",
+    "domainLeads": [
+      "Martin [TBC] — SAP transformation lead",
+      "HR + Legal",
+      "Engineering / ECCB"
+    ],
+    "systems": [
+      "SAP S/4HANA (MM, PLM)",
+      "SuccessFactors (ATS)",
+      "Microsoft Copilot Studio",
+      "LangGraph"
+    ]
+  },
+  "nova": {
+    "deliveryLead": "Shiv Tailor",
+    "commercialLead": "Felix Bühner",
+    "founder": "Martin"
+  },
+  "sources": {
+    "transcript": "Hensoldt_Novagentica Update - 2026_06_02.docx",
+    "fitDeck": "Novagentica-UseCaseFit-Hensoldt-260526_v3.8.pdf"
+  },
+  "commercials": {
+    "currency": "CHF",
+    "dayRate": 2500,
+    "//services": "ARRAY of service lines. Hensoldt is one fixed-from-stages line; add retainer / call-off / managed-runtime / free-partnership lines here for other deals.",
+    "services": [
+      {
+        "id": "ps-mvp",
+        "name": "Professional services — MVP delivery",
+        "deliveryModel": "Novagentica-built",
+        "pricingMode": "fixed-from-stages",
+        "dayRate": 2500,
+        "consultants": 1,
+        "note": "Foundation, AQVP certification and engagement management absorbed within each MVP — not billed separately. Indicative ± 15%, fixed at SoW sign-off. Licence quoted separately.",
+        "stages": [
+          {
+            "id": "MVP 1",
+            "title": "RFI/RFQ governance",
+            "oneLiner": "Reverse-engineer the existing Copilot Studio + LangGraph build and govern it.",
+            "agentDoes": "Maps decision points; encodes authority bands (€100k, one geo, one line) as a Decision Contract.",
+            "gatedAction": "Every commit gated; every decision Crypto Passport-signed.",
+            "kpis": "0% to 100% of commits within authority bands; audit-ready within the week.",
+            "aiActClass": "Limited risk",
+            "runtimeSystems": "Copilot Studio + LangGraph",
+            "status": "confirmed",
+            "isBackup": false,
+            "blastRadius": 1,
+            "elapsedWeeks": 1,
+            "days": 2,
+            "timeline": {
+              "startWeek": "W0",
+              "endWeek": "W1",
+              "liveWeek": "W1",
+              "gate": null
+            }
+          },
+          {
+            "id": "MVP 2",
+            "title": "Candidate screening",
+            "oneLiner": "Rank-and-recommend on SuccessFactors; a human signs every decision.",
+            "agentDoes": "Scores against role criteria; per-candidate reasoning artefact; disparate-impact telemetry.",
+            "gatedAction": "Article 14 human sign-off enforced at the gateway; never rejects alone.",
+            "kpis": "Time-to-shortlist 30+ days to 5-7; recruiter throughput 3-4x.",
+            "aiActClass": "Annex III high-risk",
+            "runtimeSystems": "SuccessFactors",
+            "status": "conditional",
+            "conditionNote": "Works-council approval (27 Jul) and sponsor appetite for a high-risk first case.",
+            "isBackup": false,
+            "blastRadius": 3,
+            "elapsedWeeks": 1,
+            "days": 5,
+            "timeline": {
+              "startWeek": "W1",
+              "endWeek": "W2",
+              "liveWeek": "W2",
+              "gate": "Betriebsrat 27 Jul"
+            }
+          },
+          {
+            "id": "MVP 3",
+            "title": "SAP wedge (A source-to-PO / B ECR-ECO)",
+            "oneLiner": "Source-to-PO on SAP MM, or engineering change on SAP PLM.",
+            "agentDoes": "Ranks suppliers / triages ECRs within policy; drafts PO / decision package.",
+            "gatedAction": "In-policy commits drawn; out-of-policy escalated; every output signed.",
+            "kpis": "Routine POs 3-5 days to under 1 hour; ECR triage 2-4 weeks to 24-48 hours.",
+            "aiActClass": "Limited risk (export-control hard-guarded for B)",
+            "runtimeSystems": "SAP MM / SAP PLM",
+            "status": "confirmed",
+            "isBackup": false,
+            "blastRadius": 2,
+            "elapsedWeeks": 4,
+            "days": 20,
+            "timeline": {
+              "startWeek": "W2",
+              "endWeek": "W6",
+              "liveWeek": "W6",
+              "gate": null
+            }
+          },
+          {
+            "id": "BACKUP",
+            "title": "IT-security cloud-evaluation auto-check",
+            "oneLiner": "Binary control check on the cloud evaluation sheet; approve or hard-reject + escalate.",
+            "agentDoes": "Applies a clear decision contract to a repetitive, binary check.",
+            "gatedAction": "Hard-reject and escalate to IT Security when criteria unmet.",
+            "kpis": "Low blast radius; no works-council exposure.",
+            "aiActClass": "Limited risk",
+            "runtimeSystems": "IT-security tooling",
+            "status": "conditional",
+            "isBackup": true,
+            "backupNote": "Substitutes for MVP 2 if the sponsor declines candidate screening.",
+            "blastRadius": 1,
+            "elapsedWeeks": 1,
+            "days": 4,
+            "timeline": {
+              "startWeek": "W6+",
+              "endWeek": "W6+",
+              "liveWeek": "W6+",
+              "gate": null
+            }
+          }
+        ]
+      }
+    ],
+    "//licence": "Quoted offer references a tier by name; term + introOffer are structured so the prose is generated, not re-typed.",
+    "licence": {
+      "quotedTier": "Domain",
+      "term": {
+        "initialMonths": 36,
+        "renewal": "auto, 12-month rolling unless 3 months' notice"
+      },
+      "domainDefinition": "A Domain tier covers one department within the client (for Hensoldt, one department).",
+      "introOffer": {
+        "enabled": true,
+        "promoTier": "Enterprise",
+        "promoMonths": 6,
+        "priceBasis": "Domain",
+        "defaultsTo": "Enterprise",
+        "noticeWeeks": 4
+      },
+      "addOns": [],
+      "overage": "[TBC]"
+    },
+    "//tiers": "Variable-length ladder. annualFee is a NUMBER (formatted by the lib). Quoted tier is highlighted automatically.",
+    "tiers": [
+      {
+        "name": "Domain",
+        "annualFee": 150000,
+        "agents": "Up to 20",
+        "runs": "100,000",
+        "runtimes": "2 platforms",
+        "cdap": "Weekly",
+        "support": "Business hours"
+      },
+      {
+        "name": "Enterprise",
+        "annualFee": 600000,
+        "agents": "Up to 100",
+        "runs": "500,000",
+        "runtimes": "All supported",
+        "cdap": "Daily",
+        "support": "24/5 + CSM"
+      },
+      {
+        "name": "Global",
+        "annualFee": 1200000,
+        "agents": "Unlimited",
+        "runs": "20,000,000*",
+        "runtimes": "All + custom",
+        "cdap": "Real-time",
+        "support": "24/7 + dedicated SA"
+      }
+    ],
+    "tierFootnote": "*Fair use cap. All tiers sold on a 3-year term.",
+    "runtimes": [
+      "Salesforce Agentforce",
+      "Microsoft Copilot Studio",
+      "LangGraph",
+      "SAP MM / PLM",
+      "SuccessFactors"
+    ]
+  },
+  "procurement": {
+    "routes": [
+      "Route 1 — direct from Novagentica, accelerated by sponsor priority; needs IT-security cloud-evaluation sheet.",
+      "Route 2 — via an enlisted provider who contracts the work and buys the platform; fast-tracks procurement."
+    ],
+    "loi": "Start under a Letter of Intent — without commitment or prejudice — so ingestion begins before contract and before the works council."
+  },
+  "dates": {
+    "shareBy": "2026-06-05",
+    "preAlign": "2026-06-08",
+    "sponsorMeeting": "2026-06-12",
+    "gate": {
+      "name": "Betriebsrat (works council) decision",
+      "date": "2026-07-27"
+    },
+    "kickoffAnchor": "mid-June 2026",
+    "firstValue": "first half August 2026"
+  },
+  "output": {
+    "fileStem": "Novagentica-Hensoldt",
+    "version": "2.0",
+    "gdriveFolder": "https://drive.google.com/drive/folders/1oxlKLUqalxxHqO39E6Sye5wg3C49hGGv",
+    "artefacts": [
+      "proposal",
+      "gantt",
+      "sow",
+      "execsummary",
+      "proposaldeck",
+      "summary"
+    ],
+    "formats": "DOCX + PPTX"
+  },
+  "sow": {
+    "projectName": "Architect — Hensoldt (RFI/RFQ · Candidate Screening · SAP wedge)",
+    "platform": "Novagentica Apollo Agent Exchange",
+    "version": "1.2 — DRAFT",
+    "date": "June 2026",
+    "status": "Draft (pre-contract)",
+    "footerVersion": "v1.2 — DRAFT",
+    "execSummary": [
+      {
+        "t": "This Statement of Work covers a "
+      },
+      {
+        "t": "Novagentica-built",
+        "b": true
+      },
+      {
+        "t": " engagement to bring Hensoldt’s agentic AI under enforced authority on the "
+      },
+      {
+        "t": "Novagentica Apollo Agent Exchange",
+        "b": true
+      },
+      {
+        "t": ". It delivers up to three production MVPs on one enforcement layer — "
+      },
+      {
+        "t": "RFI/RFQ governance",
+        "b": true
+      },
+      {
+        "t": " (reverse-engineered from Hensoldt’s existing Copilot Studio + LangGraph build), "
+      },
+      {
+        "t": "candidate screening",
+        "b": true
+      },
+      {
+        "t": " (conditional, EU AI Act Annex III), and an "
+      },
+      {
+        "t": "SAP wedge",
+        "b": true
+      },
+      {
+        "t": " (source-to-PO or engineering change). Every high-stakes decision is Crypto Passport–signed under the NO PASSPORT = NO EXECUTION principle. Work begins on contract signature; production activation follows works-council approval (target 27 July 2026)."
+      }
+    ],
+    "objectives": [
+      "Bring the existing RFI/RFQ agent under explicit authority bands with signed, replayable evidence — defensible at customer and regulator review.",
+      "Provide a faster, regulator-defensible candidate-screening shortlist (conditional on works-council approval) to support the ~9,000-hire growth direction.",
+      "Automate routine SAP procurement or engineering-change decisions inside policy, freeing senior time for the decisions that matter.",
+      "Stand up one reusable enforcement layer — Decision Contracts, Crypto Passport signing, Flight Recorder telemetry — that subsequent agents inherit.",
+      "Produce EU AI Act Article 43/47 documentation as a by-product of running on the platform."
+    ],
+    "scopeIn": [
+      {
+        "n": "1",
+        "deliverable": "MVP 1 — RFI/RFQ governance",
+        "description": "Reverse-engineer the existing Copilot Studio + LangGraph build into Apollo; map decision points and gaps; author Decision Contract (authority bands €100k, one geography, one line); gateway enforcement; Crypto Passport signing."
+      },
+      {
+        "n": "2",
+        "deliverable": "MVP 2 — Candidate screening (conditional)",
+        "description": "Rank-and-recommend agent on SuccessFactors; Article 14 human sign-off enforced at the gateway; disparate-impact telemetry; FRIA workstream; per-candidate reasoning artefact. In scope only on works-council approval."
+      },
+      {
+        "n": "3",
+        "deliverable": "MVP 3 — SAP wedge (A or B)",
+        "description": "One of: source-to-PO on SAP MM (sourcing → signed PO inside policy) OR ECR/ECO on SAP PLM (triage → ECCB-approved, with ITAR/AWG export-control screening). Wedge confirmed with the SAP transformation lead."
+      },
+      {
+        "n": "4",
+        "deliverable": "Foundation",
+        "description": "Security & data classification; credential-vault setup; stakeholder onboarding; platform and read access. Absorbed within MVP 1 effort."
+      },
+      {
+        "n": "5",
+        "deliverable": "Certification",
+        "description": "Three-tier AQVP certification of each agent before production."
+      },
+      {
+        "n": "6",
+        "deliverable": "Evidence & documentation",
+        "description": "Signed audit trail per decision; EU AI Act Art 43/47 docs; handover pack."
+      }
+    ],
+    "scopeOut": [
+      "Custom model training or fine-tuning.",
+      "Client-side infrastructure provisioning.",
+      "Data cleansing or ETL beyond agreed integration points.",
+      "Ongoing managed service beyond Hypercare (unless separately contracted).",
+      "Use cases beyond the named MVPs — including the IT-security cloud-evaluation backup, unless substituted for MVP 2 via change control.",
+      "Procurement of third-party licences (SuccessFactors, SAP) — assumed already held by Hensoldt."
+    ],
+    "deliverables": [
+      {
+        "deliverable": "MVP 1 governed agent live on Apollo",
+        "format": "Live in platform",
+        "acceptance": "Procurement sign-off on UAT checklist"
+      },
+      {
+        "deliverable": "MVP 2 governed agent (conditional)",
+        "format": "Live in platform",
+        "acceptance": "HR + Legal sign-off; FRIA complete; works-council approval"
+      },
+      {
+        "deliverable": "MVP 3 governed agent live on SAP",
+        "format": "Live in platform",
+        "acceptance": "Procurement / Engineering sign-off; tested vs historicals"
+      },
+      {
+        "deliverable": "Decision Contracts (per MVP)",
+        "format": "Platform artefact",
+        "acceptance": "Authority bands approved by domain lead"
+      },
+      {
+        "deliverable": "Test evidence pack",
+        "format": "DOCX",
+        "acceptance": "Provided at each go-live"
+      },
+      {
+        "deliverable": "EU AI Act Art 43/47 documentation",
+        "format": "DOCX",
+        "acceptance": "Provided at go-live"
+      },
+      {
+        "deliverable": "Delivery timeline (Gantt)",
+        "format": "DOCX",
+        "acceptance": "Approved at kickoff"
+      },
+      {
+        "deliverable": "Handover documentation",
+        "format": "DOCX",
+        "acceptance": "Provided at engagement close"
+      }
+    ],
+    "timelineIntro": "Weeks are relative to formal kickoff; production activation holds until works-council approval. The full week-by-week plan is the accompanying delivery timeline (Appendix A).",
+    "milestones": [
+      {
+        "m": "Kickoff → ingestion starts",
+        "d": "Target mid-June 2026"
+      },
+      {
+        "m": "MVP 1 live (reverse-engineered RFI/RFQ)",
+        "d": "≈ 1 week from kickoff"
+      },
+      {
+        "m": "Betriebsrat (works council) decision — external gate",
+        "d": "27 July 2026",
+        "bold": true,
+        "fill": "CRIMSON_LIGHT"
+      },
+      {
+        "m": "MVP 2 live (conditional, gated)",
+        "d": "Post-27 July 2026"
+      },
+      {
+        "m": "MVP 3 live (SAP wedge)",
+        "d": "≈ 6 weeks from kickoff"
+      },
+      {
+        "m": "First production value",
+        "d": "First half August 2026"
+      }
+    ],
+    "assumptions": [
+      "Hensoldt provides named technical and business leads with decision authority (Alex R confirmed; procurement, HR/Legal, and SAP/engineering SMEs as required).",
+      "Hensoldt IT provisions platform and read access (Copilot/LangGraph, SuccessFactors, SAP MM/PLM) within 5 business days of contract signature.",
+      "SMEs are available for Discovery workshops during the relevant MVP window.",
+      "Named third-party systems (SuccessFactors, SAP) have accessible, documented APIs.",
+      "A single Novagentica delivery consultant is assigned; effort is bounded by one person at a maximum of 5 days/week. Any client-side delay extends the timeline by an equivalent period."
+    ],
+    "riskFlags": [
+      "Betriebsrat approval is required before any MVP moves to production beyond PoC. Target 27 July 2026. If not resolved, production go-lives slip; build proceeds ahead of the gate under the signed contract.",
+      "MVP 2 is conditional on works-council approval and the sponsor accepting a high-risk first case. If declined, the IT-security cloud-evaluation backup (≈ 5 days) substitutes, re-scoped via change control.",
+      "MVP 3 wedge (A or B) requires the SAP transformation lead confirmed; his session has slipped two weeks. The framework is identical for A or B, so this is not on the critical path provided confirmation lands by W4.",
+      "Route 1 PoC requires the returned IT-security cloud-evaluation sheet (minutes to complete; Alex to provide the template)."
+    ],
+    "govRows": [
+      {
+        "role": "Novagentica Engagement Lead",
+        "resp": "Day-to-day delivery, escalation point",
+        "name": "Shiv Tailor"
+      },
+      {
+        "role": "Client Project Lead",
+        "resp": "Client decisions, UAT coordination",
+        "name": "Alex R"
+      },
+      {
+        "role": "Executive Sponsor (Client)",
+        "resp": "SoW sign-off, commercial decisions",
+        "name": "Andre [TBC]"
+      },
+      {
+        "role": "SAP Transformation Lead (Client)",
+        "resp": "MVP 3 wedge confirmation, SAP access",
+        "name": "Martin [TBC]"
+      },
+      {
+        "role": "Executive Sponsor (Novagentica)",
+        "resp": "Commercial, escalation above engagement lead",
+        "name": "Felix Bühner"
+      }
+    ],
+    "cadence": "Weekly status (email or short call), Nova Lead to Client Lead; milestone reviews at each MVP go-live and at the 27 July gate; any issue unresolved within 48 hours escalates to the Executive Sponsors.",
+    "raciCols": [
+      "Nova",
+      "Alex",
+      "SME",
+      "Sponsor"
+    ],
+    "raci": [
+      {
+        "activity": "Reverse-engineer & gap analysis",
+        "v": [
+          "R/A",
+          "C",
+          "C",
+          "I"
+        ]
+      },
+      {
+        "activity": "Author Decision Contract (authority bands)",
+        "v": [
+          "R",
+          "C",
+          "A",
+          "I"
+        ]
+      },
+      {
+        "activity": "Build & integrate",
+        "v": [
+          "R/A",
+          "C",
+          "C",
+          "I"
+        ]
+      },
+      {
+        "activity": "AQVP certification",
+        "v": [
+          "R/A",
+          "I",
+          "I",
+          "I"
+        ]
+      },
+      {
+        "activity": "UAT & domain sign-off",
+        "v": [
+          "C",
+          "A",
+          "R",
+          "I"
+        ]
+      },
+      {
+        "activity": "Works-council engagement",
+        "v": [
+          "I",
+          "R",
+          "C",
+          "A"
+        ]
+      },
+      {
+        "activity": "Production go-live",
+        "v": [
+          "R",
+          "A",
+          "C",
+          "I"
+        ]
+      },
+      {
+        "activity": "Commercial / contract",
+        "v": [
+          "R",
+          "C",
+          "I",
+          "A"
+        ]
+      }
+    ],
+    "raciNote": "“SME” = the relevant domain expert per MVP (Procurement for MVP 1/3-A; HR + Legal for MVP 2; Engineering / SAP for MVP 3-B). “Sponsor” = Andre.",
+    "changeControl": "Any change to scope, timeline, or commercials requires a written Change Request signed by both parties. Changes are not in effect until signed. Novagentica will provide an impact assessment within 3 business days of a change request being raised. Because all MVPs share the same enforcement framework, swapping a use case (for example, substituting the IT-security backup for MVP 2) is low-friction and handled through this process.",
+    "commercialsNote": "Single delivery consultant — days are bounded by one person across the elapsed weeks (max 5 days/week); MVP 1 and MVP 2 are scheduled aggressively at one week each. Foundation, AQVP certification, and engagement management are absorbed within each MVP, not billed separately. Indicative ± ~15%, fixed at sign-off.",
+    "commercialsDayLabels": [
+      "MVP 1 — RFI/RFQ governance (incl. foundation & certification) · 1 wk",
+      "MVP 2 — Candidate screening (Annex III, conditional) · 1 wk",
+      "MVP 3 — SAP wedge A or B (build) · 4 wks"
+    ],
+    "commercialsTotalsLabels": {
+      "fullSlate": "Full slate — three MVPs incl. conditional MVP 2",
+      "confirmedOnly": "Confirmed-only — MVP 2 deferred (MVP 1 + MVP 3)",
+      "backupPath": "Backup path — IT-security check (4 days) replaces MVP 2"
+    },
+    "termsRows": [
+      {
+        "item": "Engagement type",
+        "detail": "Time & materials, capped at the indicative day estimate (fixed at sign-off)"
+      },
+      {
+        "item": "Professional services rate",
+        "detail": "{dayRate} / consultant-day"
+      },
+      {
+        "item": "Total — full slate ({fullDays} days)",
+        "detail": "{fullFee} indicative",
+        "bold": true
+      },
+      {
+        "item": "Total — confirmed-only ({confDays} days)",
+        "detail": "{confFee} indicative"
+      },
+      {
+        "item": "Platform licence",
+        "detail": "Separate offer — {tier} tier, {annualPrice} / year, {term} term. A Domain tier covers one department within Hensoldt. [TBC by Novagentica account lead]"
+      },
+      {
+        "item": "Licence intro offer",
+        "detail": "First 6 months include Enterprise-tier usage at the Domain price; the licence then auto-renews to Enterprise unless Hensoldt gives 4 weeks’ written notice to remain on Domain."
+      },
+      {
+        "item": "Payment terms",
+        "detail": "[TBC by Novagentica account lead]"
+      },
+      {
+        "item": "Expenses",
+        "detail": "Charged at cost [TBC]"
+      },
+      {
+        "item": "Currency",
+        "detail": "{cur} (licence and services)"
+      }
+    ],
+    "commercialsFootnote": "Commercials are not final until confirmed by the Novagentica account lead (Felix). The platform licence is quoted separately from these professional-services days.",
+    "signoffEntities": [
+      "Hensoldt [legal entity TBC]",
+      "Novagentica AG"
+    ],
+    "appendixIntro": "The detailed week-level Gantt is provided as a separate document: ",
+    "appendixPhases": [
+      {
+        "m": "Mobilisation (reverse-engineer, gap analysis, pre-work)",
+        "d": "On contract signature"
+      },
+      {
+        "m": "MVP 1 — RFI/RFQ governance",
+        "d": "W0 → W1"
+      },
+      {
+        "m": "MVP 2 — Candidate screening (conditional)",
+        "d": "W1 → W2 (gated by Betriebsrat)"
+      },
+      {
+        "m": "MVP 3 — SAP wedge A or B",
+        "d": "W2 → W6"
+      },
+      {
+        "m": "Scale — wave 2 / backup ready",
+        "d": "W6+"
+      }
+    ]
+  }
+}
