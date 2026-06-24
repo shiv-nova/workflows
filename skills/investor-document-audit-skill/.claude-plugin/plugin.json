@@ -1,0 +1,15 @@
+{
+  "name": "investor-document-audit-skill",
+  "description": "Audit investor documents — decks, models, memos — with a critical, red-team lens.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Novagentica AG"
+  },
+  "license": "LicenseRef-Proprietary-Novagentica",
+  "keywords": [
+    "audit",
+    "investor",
+    "due-diligence",
+    "red-team"
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "name": "novagentica-skills",
+  "description": "Novagentica's skills for Claude Code — presales, delivery, commercial, decision, and finance.",
+  "owner": {
+    "name": "Novagentica AG",
+    "email": "shiv.tailor@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "cfo-advisor",
+      "source": "./skills/cfo-advisor",
+      "description": "Strategic financial frameworks for startup CFOs — financial modeling, unit economics, fundraising, cash management, and board packages.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Alireza Rezvani"
+      },
+      "license": "MIT",
+      "category": "finance",
+      "keywords": [
+        "cfo",
+        "finance",
+        "fundraising",
+        "unit-economics",
+        "runway",
+        "board"
+      ]
+    },
+    {
+      "name": "investor-document-audit-skill",
+      "source": "./skills/investor-document-audit-skill",
+      "description": "Audit investor documents — decks, models, memos — with a critical, red-team lens.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novagentica AG"
+      },
+      "license": "LicenseRef-Proprietary-Novagentica",
+      "category": "finance",
+      "keywords": [
+        "audit",
+        "investor",
+        "due-diligence",
+        "red-team"
+      ]
+    },
+    {
+      "name": "novagentica-decision",
+      "source": "./skills/novagentica-decision",
+      "description": "Frame and run internal strategic decisions (pricing, hiring, build-vs-buy) and produce a branded Decision Memo (DOCX + MD).",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novagentica AG"
+      },
+      "license": "LicenseRef-Proprietary-Novagentica",
+      "category": "strategy",
+      "keywords": [
+        "decision",
+        "strategy",
+        "memo",
+        "governance"
+      ]
+    },
+    {
+      "name": "novagentica-delivery",
+      "source": "./skills/novagentica-delivery",
+      "description": "Produce client-facing delivery artefacts — Gantt charts, deployment timelines, SoW, RACI matrices, and governance docs.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novagentica AG"
+      },
+      "license": "LicenseRef-Proprietary-Novagentica",
+      "category": "delivery",
+      "keywords": [
+        "sow",
+        "gantt",
+        "raci",
+        "delivery",
+        "governance"
+      ]
+    },
+    {
+      "name": "novagentica-engagement-pack",
+      "source": "./skills/novagentica-engagement-pack",
+      "description": "Turn a transcript + fit deck into the full engagement artefact suite (proposal, timeline, SoW, decks) from one commercial source of truth.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novagentica AG"
+      },
+      "license": "LicenseRef-Proprietary-Novagentica",
+      "category": "sales",
+      "keywords": [
+        "proposal",
+        "sow",
+        "timeline",
+        "engagement",
+        "sales"
+      ]
+    },
+    {
+      "name": "novagentica-order-form",
+      "source": "./skills/novagentica-order-form",
+      "description": "Create subscription and professional-services order forms under the Novagentica MSA.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novagentica AG"
+      },
+      "license": "LicenseRef-Proprietary-Novagentica",
+      "category": "sales",
+      "keywords": [
+        "order-form",
+        "contract",
+        "subscription",
+        "commercials"
+      ]
+    },
+    {
+      "name": "novagentica-presales-solution-design",
+      "source": "./skills/novagentica-presales-solution-design",
+      "description": "Discovery → use cases → proposal → project & implementation plan pipeline for customer opportunities (order-form handoff).",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novagentica AG"
+      },
+      "license": "LicenseRef-Proprietary-Novagentica",
+      "category": "presales",
+      "keywords": [
+        "presales",
+        "rfp",
+        "solution-design",
+        "use-case"
+      ]
+    },
+    {
+      "name": "novagentica-presentation",
+      "source": "./skills/novagentica-presentation",
+      "description": "Generate Novagentica-branded .pptx decks (cream / crimson, Inter + Georgia) for client, investor, and keynote use.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novagentica AG"
+      },
+      "license": "LicenseRef-Proprietary-Novagentica",
+      "category": "design",
+      "keywords": [
+        "presentation",
+        "pptx",
+        "deck",
+        "slides",
+        "branding"
+      ]
+    },
+    {
+      "name": "novagentica-solution-design",
+      "source": "./skills/novagentica-solution-design",
+      "description": "Discovery → use cases → proposal → project & implementation plan pipeline for customer opportunities (contracts handoff variant).",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novagentica AG"
+      },
+      "license": "LicenseRef-Proprietary-Novagentica",
+      "category": "presales",
+      "keywords": [
+        "presales",
+        "rfp",
+        "solution-design",
+        "use-case"
+      ]
+    },
+    {
+      "name": "novagentica-use-case-library",
+      "source": "./skills/novagentica-use-case-library",
+      "description": "Build and extend the by-vertical use-case library — reusable 3-slide tiles for portfolio / investor framing.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Novagentica AG"
+      },
+      "license": "LicenseRef-Proprietary-Novagentica",
+      "category": "sales",
+      "keywords": [
+        "use-case",
+        "library",
+        "vertical",
+        "portfolio"
+      ]
+    }
+  ]
+}

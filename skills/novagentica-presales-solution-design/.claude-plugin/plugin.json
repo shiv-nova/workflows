@@ -1,0 +1,15 @@
+{
+  "name": "novagentica-presales-solution-design",
+  "description": "Discovery → use cases → proposal → project & implementation plan pipeline for customer opportunities (order-form handoff).",
+  "version": "1.0.0",
+  "author": {
+    "name": "Novagentica AG"
+  },
+  "license": "LicenseRef-Proprietary-Novagentica",
+  "keywords": [
+    "presales",
+    "rfp",
+    "solution-design",
+    "use-case"
+  ]
+}
