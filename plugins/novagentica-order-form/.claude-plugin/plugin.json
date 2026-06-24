@@ -2,7 +2,6 @@
   "name": "novagentica-order-form",
   "displayName": "Novagentica Order Form",
   "description": "Create subscription and professional-services order forms under the Novagentica MSA.",
-  "version": "1.0.0",
   "author": {
     "name": "Novagentica AG"
   },
