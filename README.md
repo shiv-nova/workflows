@@ -56,10 +56,11 @@ and Claude also invokes them automatically when a task matches.
   (its target is inside the marketplace), so the real skill content lands in the cache. This is why
   the marketplace must be added via GitHub / a git URL, not a raw link to `marketplace.json`.
 - Each skill directory is self-contained (its scripts/assets live inside it).
-- Plugins intentionally **omit** `version`, so each is versioned by its git commit SHA. Every
-  push to `main` is a new version, and `Update` / `/plugin update` pulls it — no manual version
-  bumping, and no risk of a frozen cache. (If you ever want pinned releases, add `version` back to
-  the `plugin.json` files and bump it on every change.)
+- Plugins are pinned to an explicit `version` (currently **1.1.0**) in both `plugin.json` and the
+  marketplace entry. Clients only pull new content when that string changes, so **bump the version
+  on every change** (in both places, kept in sync by the generator) — otherwise installed users
+  stay on their cached copy. (To trade the clean version display for automatic per-commit updates,
+  remove `version` everywhere and it falls back to the git commit SHA.)
 
 > Why the wrapper instead of a bare `SKILL.md` per skill: a single `SKILL.md` at a plugin root is
 > only recognised by Claude Code **v2.1.142+**, so older clients (and some plugin browsers) show
