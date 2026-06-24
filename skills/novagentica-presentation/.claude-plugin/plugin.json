@@ -1,0 +1,16 @@
+{
+  "name": "novagentica-presentation",
+  "description": "Generate Novagentica-branded .pptx decks (cream / crimson, Inter + Georgia) for client, investor, and keynote use.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Novagentica AG"
+  },
+  "license": "LicenseRef-Proprietary-Novagentica",
+  "keywords": [
+    "presentation",
+    "pptx",
+    "deck",
+    "slides",
+    "branding"
+  ]
+}

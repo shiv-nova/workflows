@@ -1,0 +1,15 @@
+{
+  "name": "novagentica-decision",
+  "description": "Frame and run internal strategic decisions (pricing, hiring, build-vs-buy) and produce a branded Decision Memo (DOCX + MD).",
+  "version": "1.0.0",
+  "author": {
+    "name": "Novagentica AG"
+  },
+  "license": "LicenseRef-Proprietary-Novagentica",
+  "keywords": [
+    "decision",
+    "strategy",
+    "memo",
+    "governance"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "novagentica-order-form",
+  "description": "Create subscription and professional-services order forms under the Novagentica MSA.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Novagentica AG"
+  },
+  "license": "LicenseRef-Proprietary-Novagentica",
+  "keywords": [
+    "order-form",
+    "contract",
+    "subscription",
+    "commercials"
+  ]
+}

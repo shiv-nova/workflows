@@ -1,0 +1,17 @@
+{
+  "name": "cfo-advisor",
+  "description": "Strategic financial frameworks for startup CFOs — financial modeling, unit economics, fundraising, cash management, and board packages.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Alireza Rezvani"
+  },
+  "license": "MIT",
+  "keywords": [
+    "cfo",
+    "finance",
+    "fundraising",
+    "unit-economics",
+    "runway",
+    "board"
+  ]
+}
