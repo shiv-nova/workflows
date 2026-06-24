@@ -1,0 +1,196 @@
+{
+  "name": "Deal → Solution Validation Setup",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Deal → Solution Validation Setup\n\n**Triggers:** every 5 min, polls Deals DB\n**Dedup:** skips if Company already has a Slack Channel ID set\n\n**Before activating:**\n1. Authenticate: Notion OAuth2, Slack OAuth2, Google Drive OAuth2\n2. Set the GDrive parent folder ID in \"Create GDrive Folder\"\n3. Backfill existing active deals manually (Hensoldt, BMW, PoCo, ZF, Bosch)",
+        "height": 216,
+        "width": 1052
+      },
+      "id": "d91bfa09-72db-4cdd-b5b3-a11706eb8bbe",
+      "name": "Sticky Note 8451fcf1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [224, -512]
+    },
+    {
+      "parameters": {
+        "pollTimes": { "item": [{ "mode": "everyX", "value": 5, "unit": "minutes" }] },
+        "event": "pagedUpdatedInDatabase",
+        "databaseId": { "__rl": true, "mode": "id", "value": "d56771d0966c451aaca90501729c37e2" },
+        "simple": false
+      },
+      "id": "63cd832d-9340-4f26-9ac9-d7c53fc22628",
+      "name": "Deal Updated in Notion",
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 1 },
+          "conditions": [
+            { "leftValue": "={{ $json.properties?.Stage?.select?.name }}", "operator": { "type": "string", "operation": "equals" }, "rightValue": "Solution Validation" }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "db4a7851-286a-4932-a97a-2a1728b33d7b",
+      "name": "Stage is Solution Validation?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [224, 0]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "get",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $json.properties.Company.relation[0].id }}" },
+        "simple": false
+      },
+      "id": "80e5f525-f8de-4e0c-a05a-c6a584cc64da",
+      "name": "Get Company Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [448, 0]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const props = $input.item.json.properties;\nreturn {\n  json: {\n    companyId: $input.item.json.id,\n    companyName: props.Name?.title?.[0]?.plain_text || '',\n    companyUrl: $input.item.json.url,\n    slackChannelId: props['Slack Channel ID']?.rich_text?.[0]?.plain_text || ''\n  }\n};"
+      },
+      "id": "92d07d14-5d4e-4009-8be5-f5ffc140e34d",
+      "name": "Extract Company Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 1 },
+          "conditions": [
+            { "leftValue": "={{ $json.slackChannelId }}", "operator": { "type": "string", "operation": "isEmpty" } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "61b9e40d-303b-4078-9f7d-e5324eb1b2fa",
+      "name": "Slack Channel Not Set?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [896, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "channel-name", "name": "channelName", "value": "={{ $json.companyName.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80) }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "785af585-3d5a-49bc-9de7-b738bcc2e09e",
+      "name": "Prepare Channel Name",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 0]
+    },
+    {
+      "parameters": { "resource": "channel", "channelId": "={{ $json.channelName }}" },
+      "id": "829f52a0-7a98-4dd5-bc5c-fb19fcc5b320",
+      "name": "Create Slack Channel",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [1344, 0],
+      "webhookId": "455a0c19-7fca-4789-88bf-5806cee8eed3"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Extract Company Data').item.json.companyName }}",
+        "driveId": { "__rl": true, "value": "0AAS-m7WwhZgpUk9PVA", "mode": "list", "cachedResultName": "Customers", "cachedResultUrl": "https://drive.google.com/drive/folders/0AAS-m7WwhZgpUk9PVA" },
+        "folderId": { "__rl": true, "value": "root", "mode": "list", "cachedResultName": "/ (Root folder)", "cachedResultUrl": "https://drive.google.com/drive" },
+        "options": { "simplifyOutput": true }
+      },
+      "id": "b84a2fe1-b339-48d4-b870-787917ae58f8",
+      "name": "Create GDrive Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1568, 0]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": { "__rl": true, "mode": "id", "value": "d1f9375bae294cc89c18b605a1dc93ae" },
+        "title": "={{ $('Extract Company Data').item.json.companyName }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Source Deal|relation", "type": "relation", "relationValue": ["={{ $('Deal Updated in Notion').item.json.url }}"] },
+            { "key": "Client|relation", "type": "relation", "relationValue": ["={{ $('Extract Company Data').item.json.companyUrl }}"] },
+            { "key": "Type|select", "type": "select", "selectValue": "Client delivery" },
+            { "key": "Status|select", "type": "select", "selectValue": "Not started" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "98bdd64d-d909-4405-aa72-5a9ee6f11e94",
+      "name": "Create Notion Project Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [1792, 0]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $('Extract Company Data').item.json.companyId }}" },
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Slack Channel ID|rich_text", "type": "rich_text", "textContent": "={{ $('Create Slack Channel').item.json.id }}" },
+            { "key": "GDrive Folder URL|url", "type": "url", "urlValue": "={{ \"https://drive.google.com/drive/folders/\" + $(\"Create GDrive Folder\").item.json.id }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3b573f64-6db1-4eec-b5c3-b0f26def93c1",
+      "name": "Update Company Record",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [2016, 0]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": { "__rl": true, "mode": "id", "value": "={{ $('Create Slack Channel').item.json.id }}" },
+        "text": "={{ \"👋 Channel created for *\" + $(\"Extract Company Data\").item.json.companyName + \"* — deal has reached Solution Validation.\\nUse this channel for all internal docs and updates on this account.\\n\\n📁 GDrive: https://drive.google.com/drive/folders/\" + $(\"Create GDrive Folder\").item.json.id + \"\\n📋 Notion: \" + $(\"Create Notion Project Page\").item.json.url }}",
+        "otherOptions": {}
+      },
+      "id": "cbb4a15b-4487-4f0b-8ad2-070839b96bb3",
+      "name": "Post Welcome to Channel",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [2240, 0],
+      "webhookId": "24df6468-adc8-4b8d-b377-05e314f81747"
+    }
+  ],
+  "connections": {
+    "Deal Updated in Notion": { "main": [[{ "node": "Stage is Solution Validation?", "type": "main", "index": 0 }]] },
+    "Stage is Solution Validation?": { "main": [[{ "node": "Get Company Page", "type": "main", "index": 0 }]] },
+    "Get Company Page": { "main": [[{ "node": "Extract Company Data", "type": "main", "index": 0 }]] },
+    "Extract Company Data": { "main": [[{ "node": "Slack Channel Not Set?", "type": "main", "index": 0 }]] },
+    "Slack Channel Not Set?": { "main": [[{ "node": "Prepare Channel Name", "type": "main", "index": 0 }]] },
+    "Prepare Channel Name": { "main": [[{ "node": "Create Slack Channel", "type": "main", "index": 0 }]] },
+    "Create Slack Channel": { "main": [[{ "node": "Create GDrive Folder", "type": "main", "index": 0 }]] },
+    "Create GDrive Folder": { "main": [[{ "node": "Create Notion Project Page", "type": "main", "index": 0 }]] },
+    "Create Notion Project Page": { "main": [[{ "node": "Update Company Record", "type": "main", "index": 0 }]] },
+    "Update Company Record": { "main": [[{ "node": "Post Welcome to Channel", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "availableInMCP": true, "binaryMode": "separate" },
+  "meta": { "aiBuilderAssisted": true, "builderVariant": "mcp" },
+  "description": "Polls Deals DB every 5 min; when a deal moves to Solution Validation and the Company has no Slack channel yet, creates the Slack channel, GDrive folder, and Notion Project page, then writes the channel ID and folder URL back to the Company."
+}

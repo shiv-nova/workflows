@@ -1,0 +1,234 @@
+{
+  "name": "EXPANSION: Addendum Generation",
+  "nodes": [
+    {
+      "parameters": { "inputSource": "passthrough" },
+      "id": "63692205-5f4b-4886-a7db-26595b66516a",
+      "name": "Receive Meeting Context",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-32, 304]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": { "__rl": true, "mode": "id", "value": "43233c61-f84e-4a55-b301-03d760d9259e" },
+        "returnAll": true,
+        "filterType": "json",
+        "options": {}
+      },
+      "id": "ecb63497-1d1d-4209-a0f3-093c90ea7125",
+      "name": "Find Existing Project",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [784, 544]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst triggerData = $('Receive Meeting Context').first().json;\nconst notionItems = $input.all();\n\nlet projectId = null;\nlet projectName = 'New expansion';\nlet existingNotes = '';\n\nif (notionItems && notionItems.length > 0) {\n  const first = notionItems[0].json;\n  projectId = first.id || null;\n  projectName = first.name || 'New expansion';\n  existingNotes = (first.properties && first.properties.Notes && first.properties.Notes.rich_text && first.properties.Notes.rich_text[0] && first.properties.Notes.rich_text[0].plain_text) || '';\n}\n\n// Use newly created Slack channel ID if one was auto-created this execution\nlet slackChannelId;\ntry {\n  slackChannelId = $('Create Company Channel').first().json.id;\n} catch(e) {\n  slackChannelId = triggerData.slackChannelId || '';\n}\n\nreturn [{\n  json: {\n    projectId,\n    projectName,\n    existingNotes,\n    meetingId: triggerData.meetingId,\n    meetingTitle: triggerData.meetingTitle,\n    meetingDate: triggerData.meetingDate,\n    transcriptUrl: triggerData.transcriptUrl,\n    lastCallSummary: triggerData.lastCallSummary,\n    actionItems: triggerData.actionItems,\n    gist: triggerData.gist,\n    contactId: triggerData.contactId,\n    contactName: triggerData.contactName,\n    contactEmail: triggerData.contactEmail,\n    contactRole: triggerData.contactRole,\n    companyId: triggerData.companyId,\n    companyName: triggerData.companyName,\n    companyIndustry: triggerData.companyIndustry,\n    slackChannelId,\n    dealId: triggerData.dealId,\n    dealName: triggerData.dealName,\n    dealStage: triggerData.dealStage\n  }\n}];\n"
+      },
+      "id": "cd748bd9-248d-4f33-a6d3-0c7a05b5b237",
+      "name": "Extract Project Info",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [944, 544]
+    },
+    {
+      "parameters": {
+        "modelId": { "__rl": true, "mode": "id", "value": "claude-opus-4-8" },
+        "messages": {
+          "values": [
+            { "content": "=CLIENT: {{ $json.companyName }} ({{ $json.companyIndustry }})\nEXISTING PROJECT: {{ $json.projectName }}\nCALL WITH: {{ $json.contactName }}, {{ $json.contactRole }}\nCALL SUMMARY: {{ $json.lastCallSummary }}\nGIST: {{ $json.gist }}\nACTION ITEMS: {{ $json.actionItems }}\n\nDraft an expansion addendum. Return JSON:\n{\n  \"addendumTitle\": \"Short title for the expansion scope\",\n  \"executiveSummary\": \"1-2 paragraph summary of the expansion opportunity\",\n  \"expansionScope\": \"What additional work is being proposed\",\n  \"additionalDeliverables\": [\"Deliverable 1\", \"Deliverable 2\"],\n  \"proposedTimeline\": \"Estimated additional timeline\",\n  \"commercialNote\": \"Brief note on commercial structure\",\n  \"nextSteps\": \"Immediate next steps to close the expansion\"\n}\nReturn only valid JSON." }
+          ]
+        },
+        "options": {
+          "system": "You are a senior delivery consultant at Novagentica. You draft expansion scope addenda based on client call notes. Be specific, commercial, and concise.",
+          "maxTokens": 3000
+        }
+      },
+      "id": "d64a5e29-f664-4655-b4d0-503de005c2a0",
+      "name": "Draft Expansion Addendum",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [1088, 544]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst claudeOutput = $input.first().json;\nconst projectData = $('Extract Project Info').first().json;\n\n// Extract text from Claude response\nlet rawText = '';\nif (claudeOutput.content && Array.isArray(claudeOutput.content)) {\n  rawText = claudeOutput.content.map(c => c.text || '').join('');\n} else if (claudeOutput.text) {\n  rawText = claudeOutput.text;\n} else if (typeof claudeOutput === 'string') {\n  rawText = claudeOutput;\n}\n\n// Parse JSON - strip code fences if present\nconst jsonMatch = rawText.match(/```(?:json)?\\n?([\\s\\S]*?)```/) || rawText.match(/(\\{[\\s\\S]*\\})/);\nconst jsonStr = jsonMatch ? jsonMatch[1] : rawText;\nlet addendum = {};\ntry {\n  addendum = JSON.parse(jsonStr.trim());\n} catch(e) {\n  addendum = {\n    addendumTitle: 'Expansion Addendum',\n    executiveSummary: rawText,\n    expansionScope: '',\n    additionalDeliverables: [],\n    proposedTimeline: 'TBD',\n    commercialNote: '',\n    nextSteps: 'Review and sign'\n  };\n}\n\nconst deliverablesText = Array.isArray(addendum.additionalDeliverables)\n  ? addendum.additionalDeliverables.map((d, i) => (i + 1) + '. ' + d).join('\\n')\n  : '';\n\nconst docContent = 'EXPANSION ADDENDUM\\n\\n' +\n  'Client: ' + projectData.companyName + '\\n' +\n  'Project: ' + projectData.projectName + '\\n' +\n  'Addendum: ' + (addendum.addendumTitle || '') + '\\n' +\n  'Prepared by: Novagentica\\n' +\n  'Date: ' + projectData.meetingDate + '\\n\\n' +\n  'EXECUTIVE SUMMARY\\n' +\n  (addendum.executiveSummary || '') + '\\n\\n' +\n  'ADDITIONAL SCOPE\\n' +\n  (addendum.expansionScope || '') + '\\n\\n' +\n  'ADDITIONAL DELIVERABLES\\n' +\n  deliverablesText + '\\n\\n' +\n  'PROPOSED TIMELINE\\n' +\n  (addendum.proposedTimeline || '') + '\\n\\n' +\n  'COMMERCIAL NOTE\\n' +\n  (addendum.commercialNote || '') + '\\n\\n' +\n  'NEXT STEPS\\n' +\n  (addendum.nextSteps || '') + '\\n\\n' +\n  'Reference transcript: ' + projectData.transcriptUrl;\n\nreturn [{\n  json: {\n    addendumTitle: addendum.addendumTitle || 'Expansion Addendum',\n    executiveSummary: addendum.executiveSummary || '',\n    expansionScope: addendum.expansionScope || '',\n    additionalDeliverables: addendum.additionalDeliverables || [],\n    proposedTimeline: addendum.proposedTimeline || '',\n    commercialNote: addendum.commercialNote || '',\n    nextSteps: addendum.nextSteps || '',\n    docContent,\n    projectId: projectData.projectId,\n    projectName: projectData.projectName,\n    existingNotes: projectData.existingNotes,\n    companyId: projectData.companyId,\n    companyName: projectData.companyName,\n    dealId: projectData.dealId,\n    meetingDate: projectData.meetingDate,\n    transcriptUrl: projectData.transcriptUrl,\n    slackChannelId: projectData.slackChannelId,\n    contactName: projectData.contactName\n  }\n}];\n"
+      },
+      "id": "1799e2be-5bb6-4a03-8bb9-bc8ca570ea5b",
+      "name": "Parse Claude Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1392, 544]
+    },
+    {
+      "parameters": {
+        "folderId": "root",
+        "title": "=Addendum — {{ $json.addendumTitle }} — {{ $json.companyName }}"
+      },
+      "id": "2680cbfd-2238-44d4-9aed-17681e19dc2c",
+      "name": "Create Addendum Document",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [1552, 544]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            { "action": "=insert", "locationChoice": "=endOfSegmentLocation", "text": "={{ $(\"Parse Claude Response\").first().json.docContent }}" }
+          ]
+        }
+      },
+      "id": "8e895485-1955-4548-a624-04f62b6aa98b",
+      "name": "Insert Addendum Content",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [1696, 544]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 1 },
+          "conditions": [
+            { "leftValue": "={{ $(\"Parse Claude Response\").first().json.projectId }}", "operator": { "type": "string", "operation": "notEmpty" }, "rightValue": "" }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7fcf23df-f4d5-49b4-b839-04b03f4f3634",
+      "name": "Project Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1856, 544]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $(\"Parse Claude Response\").first().json.projectId }}" },
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Notes|rich_text", "type": "rich_text", "textContent": "={{ $(\"Parse Claude Response\").first().json.existingNotes ? $(\"Parse Claude Response\").first().json.existingNotes + \"\\nAddendum: https://docs.google.com/document/d/\" + $(\"Create Addendum Document\").first().json.id + \"\\nFrom transcript: \" + $(\"Parse Claude Response\").first().json.transcriptUrl : \"Addendum: https://docs.google.com/document/d/\" + $(\"Create Addendum Document\").first().json.id + \"\\nFrom transcript: \" + $(\"Parse Claude Response\").first().json.transcriptUrl }}" },
+            { "key": "SoW Status|select", "type": "select", "selectValue": "Drafted" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "701b032e-1f67-41dc-8e90-9c6d3f12f111",
+      "name": "Update Existing Project",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [2064, 480]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": { "__rl": true, "mode": "id", "value": "={{ $(\"Parse Claude Response\").first().json.slackChannelId || \"D0B3KBGM2CQ\" }}" },
+        "text": "=:arrows_counterclockwise: *Expansion addendum generated for {{ $(\"Parse Claude Response\").first().json.companyName }}*\n*Call with:* {{ $(\"Parse Claude Response\").first().json.contactName }}\n*Addendum:* {{ $(\"Parse Claude Response\").first().json.addendumTitle }}\n\n<https://docs.google.com/document/d/{{ $(\"Create Addendum Document\").first().json.id }}|View Addendum Document>\n<{{ $(\"Parse Claude Response\").first().json.transcriptUrl }}|View Transcript>\n\n*Next steps:* {{ $(\"Parse Claude Response\").first().json.nextSteps }}",
+        "otherOptions": { "includeLinkToWorkflow": false }
+      },
+      "id": "3148f893-5461-42bb-b95a-2a812e4752c5",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [2304, 544],
+      "executeOnce": true,
+      "webhookId": "273c27c3-75f2-4a2a-8455-ec722a5e698c"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": { "__rl": true, "mode": "id", "value": "43233c61-f84e-4a55-b301-03d760d9259e" },
+        "title": "={{ $(\"Parse Claude Response\").first().json.addendumTitle }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Client|relation", "type": "relation", "relationValue": ["={{ $(\"Parse Claude Response\").first().json.companyId }}"] },
+            { "key": "Source Deal|relation", "type": "relation", "relationValue": ["={{ $(\"Parse Claude Response\").first().json.dealId }}"] },
+            { "key": "Status|select", "type": "select", "selectValue": "Not started" },
+            { "key": "SoW Status|select", "type": "select", "selectValue": "Drafted" },
+            { "key": "Type|select", "type": "select", "selectValue": "Client delivery" },
+            { "key": "Notes|rich_text", "type": "rich_text", "textContent": "=Addendum: https://docs.google.com/document/d/{{ $(\"Create Addendum Document\").first().json.id }}\nFrom transcript: {{ $(\"Parse Claude Response\").first().json.transcriptUrl }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a000d9d9-ba7c-431b-9611-d5b238b160b7",
+      "name": "Create New Project",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [2064, 608]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 1 },
+          "conditions": [
+            { "leftValue": "={{ $('Receive Meeting Context').first().json.slackChannelId }}", "operator": { "type": "string", "operation": "empty" }, "rightValue": "" }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "feadb589-9822-4b7e-a2a2-4dee4ce9a6aa",
+      "name": "Needs Slack Channel?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [224, 304]
+    },
+    {
+      "parameters": {
+        "resource": "channel",
+        "channelId": "={{ 'nova-' + $('Receive Meeting Context').first().json.companyName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 74) }}",
+        "channelVisibility": "private"
+      },
+      "id": "54d079a4-d1d6-456e-9bec-68025546d096",
+      "name": "Create Company Channel",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [400, 240],
+      "webhookId": "ab27067a-f02a-4bf8-9eca-69513765fe7d"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $('Receive Meeting Context').first().json.companyId }}" },
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Slack Channel ID|rich_text", "type": "rich_text", "textContent": "={{ $json.id }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "49ffd016-6445-4474-9484-36efb62d062e",
+      "name": "Update Company Notion Channel",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [592, 256]
+    }
+  ],
+  "connections": {
+    "Find Existing Project": { "main": [[{ "node": "Extract Project Info", "type": "main", "index": 0 }]] },
+    "Extract Project Info": { "main": [[{ "node": "Draft Expansion Addendum", "type": "main", "index": 0 }]] },
+    "Draft Expansion Addendum": { "main": [[{ "node": "Parse Claude Response", "type": "main", "index": 0 }]] },
+    "Parse Claude Response": { "main": [[{ "node": "Create Addendum Document", "type": "main", "index": 0 }]] },
+    "Create Addendum Document": { "main": [[{ "node": "Insert Addendum Content", "type": "main", "index": 0 }]] },
+    "Insert Addendum Content": { "main": [[{ "node": "Project Exists?", "type": "main", "index": 0 }]] },
+    "Project Exists?": { "main": [[{ "node": "Update Existing Project", "type": "main", "index": 0 }], [{ "node": "Create New Project", "type": "main", "index": 0 }]] },
+    "Update Existing Project": { "main": [[{ "node": "Notify Slack", "type": "main", "index": 0 }]] },
+    "Create New Project": { "main": [[{ "node": "Notify Slack", "type": "main", "index": 0 }]] },
+    "Receive Meeting Context": { "main": [[{ "node": "Needs Slack Channel?", "type": "main", "index": 0 }]] },
+    "Needs Slack Channel?": { "main": [[{ "node": "Create Company Channel", "type": "main", "index": 0 }], [{ "node": "Find Existing Project", "type": "main", "index": 0 }]] },
+    "Create Company Channel": { "main": [[{ "node": "Update Company Notion Channel", "type": "main", "index": 0 }]] },
+    "Update Company Notion Channel": { "main": [[{ "node": "Find Existing Project", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "availableInMCP": true, "binaryMode": "separate" },
+  "meta": { "aiBuilderAssisted": true, "builderVariant": "mcp", "templateCredsSetupCompleted": true },
+  "description": "Called by Meeting Router for Signed/Expansion deal stage meetings. Looks up the existing Notion project, generates an expansion addendum in Google Docs via Claude, updates Notion, and notifies via Slack."
+}
