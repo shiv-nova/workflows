@@ -42,21 +42,30 @@ and Claude also invokes them automatically when a task matches.
 
 ### How the packaging works
 - `.claude-plugin/marketplace.json` (repo root) is the catalog; each entry's `source` points at
-  `./skills/<name>`.
-- Each `skills/<name>/` is a **single-skill plugin**: its existing root `SKILL.md` is the skill,
-  and a `skills/<name>/.claude-plugin/plugin.json` adds the plugin manifest. No files moved —
-  `skills/` stays the single source of truth.
-- Each skill directory is self-contained (its scripts/assets live inside it), which is required
-  because Claude Code copies a plugin's directory into its cache on install.
+  `./plugins/<name>`.
+- Each `plugins/<name>/` is a thin plugin wrapper: a `.claude-plugin/plugin.json` manifest plus
+  `skills/<name>` — a **symlink back to the canonical `skills/<name>/`**. This gives the
+  universally-supported `skills/<name>/SKILL.md` layout while keeping `skills/` the single source
+  of truth (no files duplicated or moved).
+- On a Git install, Claude Code copies each plugin into its cache and **dereferences** that symlink
+  (its target is inside the marketplace), so the real skill content lands in the cache. This is why
+  the marketplace must be added via GitHub / a git URL, not a raw link to `marketplace.json`.
+- Each skill directory is self-contained (its scripts/assets live inside it).
 - Plugins are pinned to `version` in their `plugin.json`. **Bump that version when you change a
   skill** so installed users receive the update (omit it to ship every commit as a new version).
+
+> Why the wrapper instead of a bare `SKILL.md` per skill: a single `SKILL.md` at a plugin root is
+> only recognised by Claude Code **v2.1.142+**, so older clients (and some plugin browsers) show
+> "no skills". The nested `skills/<name>/SKILL.md` layout works everywhere.
 
 > The `.claude/skills/*` symlinks are unrelated to the marketplace — they make these skills active
 > for anyone working *inside this repo*; the marketplace is for installing them *elsewhere*.
 
 ## Layout
-- `skills/` — the Claude.ai skills (`/mnt/skills/user/...`), each also published as a marketplace
-  plugin. Each is a thin generator layer over a shared `lib/` with a `CONVENTIONS.md` standard.
+- `skills/` — the Claude.ai skills (`/mnt/skills/user/...`), the canonical source for each skill.
+  Each is a thin generator layer over a shared `lib/` with a `CONVENTIONS.md` standard.
+- `plugins/<name>/` — marketplace plugin wrappers; each symlinks `skills/<name>` back to the
+  canonical skill. Nothing here is hand-edited — regenerate it if you add a skill.
 - `.claude-plugin/marketplace.json` — the plugin marketplace catalog (lists all skills as plugins).
 - `genservice/` — `nvg-genservice`, the Express service that wraps the canonical generator
   scripts as HTTP endpoints. Deployed to AWS App Runner (Frankfurt, eu-central-1).
