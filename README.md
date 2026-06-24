@@ -4,7 +4,9 @@ This repo is the durable home for everything that previously lived only in the C
 skills sandbox or on a local disk. If a version question ever arises, **this repo wins.**
 
 It is also a **Claude Code plugin marketplace**: every skill in `skills/` is published as an
-installable plugin so anyone can pull just the skills they want.
+installable plugin so anyone can pull just the skills they want. Each plugin ships **both a skill
+and a matching agent**, so it surfaces in skill-based clients and in **Cowork** (which lists
+plugin *agents*).
 
 ## Install as a Claude Code marketplace
 Add the marketplace once, then install any skill as a plugin:
@@ -43,10 +45,13 @@ and Claude also invokes them automatically when a task matches.
 ### How the packaging works
 - `.claude-plugin/marketplace.json` (repo root) is the catalog; each entry's `source` points at
   `./plugins/<name>`.
-- Each `plugins/<name>/` is a thin plugin wrapper: a `.claude-plugin/plugin.json` manifest plus
-  `skills/<name>` — a **symlink back to the canonical `skills/<name>/`**. This gives the
-  universally-supported `skills/<name>/SKILL.md` layout while keeping `skills/` the single source
-  of truth (no files duplicated or moved).
+- Each `plugins/<name>/` is a thin plugin wrapper: a `.claude-plugin/plugin.json` manifest, a
+  `skills/<name>` **symlink back to the canonical `skills/<name>/`**, and an `agents/<name>.md`
+  subagent. The symlink gives the universally-supported `skills/<name>/SKILL.md` layout while
+  keeping `skills/` the single source of truth (no files duplicated or moved).
+- The `agents/<name>.md` subagent **preloads its plugin's skill** (`skills:` frontmatter) and
+  delegates to it, so the skill stays the single source of truth. Agents are what **Cowork** lists
+  and runs — a skill-only plugin shows no agents there, which is why each plugin ships one.
 - On a Git install, Claude Code copies each plugin into its cache and **dereferences** that symlink
   (its target is inside the marketplace), so the real skill content lands in the cache. This is why
   the marketplace must be added via GitHub / a git URL, not a raw link to `marketplace.json`.
@@ -65,7 +70,8 @@ and Claude also invokes them automatically when a task matches.
 - `skills/` — the Claude.ai skills (`/mnt/skills/user/...`), the canonical source for each skill.
   Each is a thin generator layer over a shared `lib/` with a `CONVENTIONS.md` standard.
 - `plugins/<name>/` — marketplace plugin wrappers; each symlinks `skills/<name>` back to the
-  canonical skill. Nothing here is hand-edited — regenerate it if you add a skill.
+  canonical skill and ships an `agents/<name>.md` subagent. Nothing here is hand-edited —
+  regenerate it if you add a skill.
 - `.claude-plugin/marketplace.json` — the plugin marketplace catalog (lists all skills as plugins).
 - `genservice/` — `nvg-genservice`, the Express service that wraps the canonical generator
   scripts as HTTP endpoints. Deployed to AWS App Runner (Frankfurt, eu-central-1).

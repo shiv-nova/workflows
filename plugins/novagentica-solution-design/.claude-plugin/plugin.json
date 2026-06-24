@@ -1,5 +1,6 @@
 {
   "name": "novagentica-solution-design",
+  "displayName": "Novagentica Solution Design",
   "description": "Discovery → use cases → proposal → project & implementation plan pipeline for customer opportunities (contracts handoff variant).",
   "version": "1.0.0",
   "author": {
