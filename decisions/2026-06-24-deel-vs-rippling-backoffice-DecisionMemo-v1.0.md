@@ -1,6 +1,6 @@
 # Decision Memo: Choose Deel or Rippling as the single managed vendor for Novagentica's HR·IT·EOR·Payroll stack (3→30 ramp, 2-yr term)
 
-**Status:** AWAITING OWNER DECISION
+**Status:** DECIDED — Deel (recorded 2026-06-24)
 **Owner:** Shiv Tailor      **Date:** 2026-06-24      **Decide by:** 2026-07-03 (before Stage-1 onboarding, Jul–Dec 26; pre-signature is peak leverage)
 **Reversibility:** Type-1 (expensive/painful to reverse) — cost-to-reverse: re-migrating HR + identity + payroll + device fleet off one platform mid-contract; the risk model rates switching cost "huge" once all four pillars + data + devices are live; Rippling auto-renews (worst case for exit); plus a 2-year commitment.
 **Depends on / relates to:** The 7 modelling decisions already locked (ramp 3→30; ~50% EOR; single-vendor scope, no internal IT; Rippling EOR discount locked full term; 2-yr term; model both FX). This memo decides the vendor *within* that locked scope; it does not re-open the consolidation scope except via the null option.
@@ -74,10 +74,20 @@ All figures from the **Deel-vs-Rippling Normalised Comparison model** (the uploa
 - **CISO (inline board):** "Both vendors' 24/7 security-ops layer is still a CONFIRM flag. We are choosing the vendor before we have evidence that either can actually run the security operations for a consolidated payroll-plus-identity-plus-device estate. Confirm the security-ops layer before signature, not after."
 
 ## 11. Decision
-**Chose:** _______________   |   **Rejected:** _______________ (+ one-line why each)
-**Decided by:** Shiv Tailor   **On:** __________
+**Chose:** **Deel.**
+**Rejected:** *Rippling* — refused to remove the auto-renewal clause (the §9 tripwire), making the lock-in risk on an all-eggs single-vendor bet unacceptable; and Rippling does not lease IT devices, so a no-internal-IT team would still have to procure hardware separately. *Null (don't consolidate)* — forfeits the pre-signature leverage window and leaves HR/IT/payroll fragmented through the ramp, likely forcing an internal IT hire.
+**Why this is consistent with the memo:** §5 recommended "Rippling *conditional*, else Deel"; the condition failed — Rippling held the auto-renewal — so the §9 kill-criterion fired exactly as pre-registered, and the §10 General Counsel dissent ("unless auto-renewal is struck out in writing, Deel is the safer all-eggs partner") becomes the operative position. The new fact that Deel leases IT devices and Rippling does not reinforces the choice on the "no internal IT" goal.
+**Decided by:** Shiv Tailor   **On:** 2026-06-24
 **Review checkpoint:** 2026-12-31 (end of Stage 1, after first production payroll cycles)
-**Freeze:** Offer a 14-day cooldown (`/cs:freeze`) once a vendor is chosen — plugin not installed here, so freeze is recorded in this memo and the local decisions log rather than enforced by the tool.
+**Freeze:** 14-day cooldown recommended before counter-signature (`/cs:freeze` not installed — recorded here). Given the decision rests on two firm facts (auto-renewal refused; no device leasing), the cooldown is a formality, not a reconsideration window.
+
+## 12. What changes now — Deel-specific actions
+Choosing Deel accepts two known weaknesses (USD/FX exposure; Felix's prior failed Deel go-live) for two firm advantages (no auto-renew + locked rate; IT device leasing). The mitigations that were optional for Rippling are now mandatory:
+- **Confirm the DE country fee / GP entity cost before counter-signing** — the workbook flags it "may be MANDATORY for EOR." We are not choosing Deel on price, so a modest increase is acceptable, but it must be known and budgeted (§9 kill-criterion still applies if it is large).
+- **Manage USD/FX exposure** — Deel is USD-billed. Budget at the weak-EUR case (~€105.7k over 2 yrs vs €97.2k base) and seek a fixed-FX clause or a simple USD hedge.
+- **De-risk the implementation Felix got burned by** — the headline accepted risk. Reference calls including a *recovered* failed Deel go-live; a parallel payroll run to two consecutive clean cycles before cutover; named OBM/CSM + SLA response times in writing.
+- **Lock Deel's strengths in writing** — no auto-renewal + the locked rate, plus data-export / exit-assistance and SLAs with service credits.
+- **Confirm device-leasing scope in the order** — procure → deploy → manage → return terms, since device leasing is a stated reason for the choice.
 
 ---
 *novagentica*
