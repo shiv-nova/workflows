@@ -31,10 +31,9 @@ c.push(body([{ text: "Select one. ", bold: true }, "Professional Services are de
 c.push(table([900, 2900, 5226], [
   hRow(["Select", "Model", "What it means"], [900, 2900, 5226]),
   new TableRow({ children: [tc(BOX, { w: 900, align: AT.CENTER, fill: T.CREAM2 }), tc([cellPara([{ text: "Novagentica-built", bold: true }])], { w: 2900 }), tc("Novagentica designs, builds and enforces the agents and delivers them into the Customer\u2019s runtimes.", { w: 5226 })] }),
-  new TableRow({ children: [tc("☒", { w: 900, align: AT.CENTER, fill: T.CREAM2 }), tc([cellPara([{ text: "Co-build (Agentic Atelier)", bold: true }])], { w: 2900 }), tc("Novagentica and the Customer build together; the Customer\u2019s team is upskilled alongside delivery.", { w: 5226 })] }),
+  new TableRow({ children: [tc(BOX, { w: 900, align: AT.CENTER, fill: T.CREAM2 }), tc([cellPara([{ text: "Co-build (Agentic Atelier)", bold: true }])], { w: 2900 }), tc("Novagentica and the Customer build together; the Customer\u2019s team is upskilled alongside delivery.", { w: 5226 })] }),
   new TableRow({ children: [tc(BOX, { w: 900, align: AT.CENTER, fill: T.CREAM2 }), tc([cellPara([{ text: "Customer-built + supported", bold: true }])], { w: 2900 }), tc("The Customer builds; Novagentica provides enablement, review and enforcement support. Includes ingestion of existing agents.", { w: 5226 })] }),
 ]));
-c.push(note("Delivery model is always Co-build (Agentic Atelier) — Novagentica does not deliver on a pure “Novagentica-built” basis. Keep Co-build selected; the other rows are shown for context."));
 
 /* SERVICES OVERVIEW */
 c.push(head("Professional services overview"));

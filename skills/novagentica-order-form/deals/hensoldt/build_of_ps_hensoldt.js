@@ -27,10 +27,9 @@ c.push(body([{ text: "Select one. ", bold: true }, "Professional Services are de
 c.push(table([900, 2900, 5226], [
   hRow(["Select", "Model", "What it means"], [900, 2900, 5226]),
   new TableRow({ children: [tc(BOX, { w: 900, align: AT.CENTER, fill: T.CREAM2 }), tc([cellPara([{ text: "Novagentica-built", bold: true }])], { w: 2900 }), tc("Novagentica designs, builds and enforces the agents and delivers them into the Customer\u2019s runtimes.", { w: 5226 })] }),
-  new TableRow({ children: [tc("☒", { w: 900, align: AT.CENTER, fill: T.CREAM2 }), tc([cellPara([{ text: "Co-build (Agentic Atelier)", bold: true }])], { w: 2900 }), tc("Novagentica and the Customer build together; the Customer\u2019s team is upskilled alongside delivery.", { w: 5226 })] }),
+  new TableRow({ children: [tc("\u2612", { w: 900, align: AT.CENTER, fill: T.CREAM2 }), tc([cellPara([{ text: "Co-build (Agentic Atelier)", bold: true }])], { w: 2900 }), tc("Novagentica and the Customer build together; the Customer\u2019s team is upskilled alongside delivery.", { w: 5226 })] }),
   new TableRow({ children: [tc(BOX, { w: 900, align: AT.CENTER, fill: T.CREAM2 }), tc([cellPara([{ text: "Customer-built + supported", bold: true }])], { w: 2900 }), tc("The Customer builds; Novagentica provides enablement, review and enforcement support. Includes ingestion of existing agents.", { w: 5226 })] }),
 ]));
-c.push(note("Delivery model is always Co-build (Agentic Atelier) — Novagentica does not deliver on a pure “Novagentica-built” basis. Keep Co-build selected; the other rows are shown for context."));
 
 /* SERVICES OVERVIEW */
 c.push(head("Professional services overview"));
@@ -48,8 +47,8 @@ c.push(body([{ text: "MVP stages", bold: true }], { after: 60 }));
 c.push(table([1500, 4926, 2600], [
   hRow(["Stage", "Outcome delivered & enforced", "Est. effort (days)"], [1500, 4926, 2600]),
   new TableRow({ children: [tc([cellPara([{ text: "MVP1", bold: true }])], { w: 1500, fill: T.CREAM2 }), tc("RFI/RFQ governance \u2014 govern the Copilot Studio + LangGraph build; authority bands encoded as a Decision Contract; every commit gated and Crypto Passport-signed.", { w: 4926 }), tc("2", { w: 2600, align: AT.CENTER })] }),
-  new TableRow({ children: [tc([cellPara([{ text: "MVP2", bold: true }])], { w: 1500, fill: T.CREAM2 }), tc("Candidate screening on SuccessFactors \u2014 rank-and-recommend with Article 14 human sign-off (Annex III high-risk; works-council gated).", { w: 4926 }), tc("5", { w: 2600, align: AT.CENTER })] }),
-  new TableRow({ children: [tc([cellPara([{ text: "MVP3", bold: true }])], { w: 1500, fill: T.CREAM2 }), tc("SAP source-to-PO on SAP MM \u2014 in-policy purchase orders drawn automatically; out-of-policy escalated; every output signed.", { w: 4926 }), tc("20", { w: 2600, align: AT.CENTER })] }),
+  new TableRow({ children: [tc([cellPara([{ text: "MVP2", bold: true }])], { w: 1500, fill: T.CREAM2 }), tc("Candidate screening on SuccessFactors \u2014 co-built with Hensoldt\u2019s HR and engineering teams in the Agentic Atelier, who are upskilled to own it; rank-and-recommend with Article 14 human sign-off (Annex III high-risk; works-council gated).", { w: 4926 }), tc("5", { w: 2600, align: AT.CENTER })] }),
+  new TableRow({ children: [tc([cellPara([{ text: "MVP3", bold: true }])], { w: 1500, fill: T.CREAM2 }), tc("SAP source-to-PO on SAP MM \u2014 co-built alongside Hensoldt\u2019s SAP and procurement teams in the Agentic Atelier, with knowledge transfer so the team can own and extend it; in-policy purchase orders drawn automatically, out-of-policy escalated, every output signed.", { w: 4926 }), tc("20", { w: 2600, align: AT.CENTER })] }),
   new TableRow({ children: [tc([cellPara([{ text: "Total", bold: true }])], { w: 1500, fill: T.CRIMSON, color: "FFFFFF" }), tc("", { w: 4926, fill: T.CRIMSON }), tc([cellPara([{ text: "27", bold: true }], { align: AT.CENTER })], { w: 2600, fill: T.CRIMSON, color: "FFFFFF" })] }),
 ]));
 c.push(note("Hensoldt MVP plan (27 person-days). MVP2 is conditional on works-council (Betriebsrat) approval \u2014 see SoW. Detailed scope and acceptance criteria belong in the SoW / Appendix 1."));
