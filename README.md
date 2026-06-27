@@ -43,6 +43,8 @@ and Claude also invokes them automatically when a task matches.
 | `novagentica-use-case-library` | By-vertical, reusable 3-slide use-case tiles. |
 
 ### How the packaging works
+
+> **IMPORTANT (changed in 1.1.1):** plugins are now **self-contained** — `plugins/<name>/skills/<name>/` holds **real copies** of each skill, NOT a symlink. Cowork installs a plugin by copying its `source` folder as-is and does **not** dereference a symlink that escapes that folder (`../../../skills/<name>`) — which left every installed skill empty. `skills/` stays the canonical source; regenerate `plugins/` as real (dereferenced) copies — never symlinks — and bump the patch version. Run `fix-cowork-loading.sh` to regenerate + validate.
 - `.claude-plugin/marketplace.json` (repo root) is the catalog; each entry's `source` points at
   `./plugins/<name>`.
 - Each `plugins/<name>/` is a thin plugin wrapper: a `.claude-plugin/plugin.json` manifest, a

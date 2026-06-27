@@ -11,7 +11,7 @@
       "displayName": "CFO Advisor",
       "source": "./plugins/cfo-advisor",
       "description": "Strategic financial frameworks for startup CFOs — financial modeling, unit economics, fundraising, cash management, and board packages.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Alireza Rezvani"
       },
@@ -31,7 +31,7 @@
       "displayName": "Investor Document Audit",
       "source": "./plugins/investor-document-audit-skill",
       "description": "Audit investor documents — decks, models, memos — with a critical, red-team lens.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Novagentica AG"
       },
@@ -49,7 +49,7 @@
       "displayName": "Novagentica Decision",
       "source": "./plugins/novagentica-decision",
       "description": "Frame and run internal strategic decisions (pricing, hiring, build-vs-buy) and produce a branded Decision Memo (DOCX + MD).",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Novagentica AG"
       },
@@ -67,7 +67,7 @@
       "displayName": "Novagentica Delivery",
       "source": "./plugins/novagentica-delivery",
       "description": "Produce client-facing delivery artefacts — Gantt charts, deployment timelines, SoW, RACI matrices, and governance docs.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Novagentica AG"
       },
@@ -86,7 +86,7 @@
       "displayName": "Novagentica Engagement Pack",
       "source": "./plugins/novagentica-engagement-pack",
       "description": "Turn a transcript + fit deck into the full engagement artefact suite (proposal, timeline, SoW, decks) from one commercial source of truth.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Novagentica AG"
       },
@@ -105,7 +105,7 @@
       "displayName": "Novagentica Order Form",
       "source": "./plugins/novagentica-order-form",
       "description": "Create subscription and professional-services order forms under the Novagentica MSA.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Novagentica AG"
       },
@@ -123,7 +123,7 @@
       "displayName": "Novagentica Presales Solution Design",
       "source": "./plugins/novagentica-presales-solution-design",
       "description": "Discovery → use cases → proposal → project & implementation plan pipeline for customer opportunities (order-form handoff).",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Novagentica AG"
       },
@@ -141,7 +141,7 @@
       "displayName": "Novagentica Presentation",
       "source": "./plugins/novagentica-presentation",
       "description": "Generate Novagentica-branded .pptx decks (cream / crimson, Inter + Georgia) for client, investor, and keynote use.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Novagentica AG"
       },
@@ -160,7 +160,7 @@
       "displayName": "Novagentica Solution Design",
       "source": "./plugins/novagentica-solution-design",
       "description": "Discovery → use cases → proposal → project & implementation plan pipeline for customer opportunities (contracts handoff variant).",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Novagentica AG"
       },
@@ -178,7 +178,7 @@
       "displayName": "Novagentica Use-Case Library",
       "source": "./plugins/novagentica-use-case-library",
       "description": "Build and extend the by-vertical use-case library — reusable 3-slide tiles for portfolio / investor framing.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Novagentica AG"
       },
