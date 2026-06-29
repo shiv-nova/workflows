@@ -10,6 +10,7 @@ const {
   Footer, AlignmentType, LevelFormat, HeadingLevel, BorderStyle,
   WidthType, ShadingType, VerticalAlign, PageNumber, PageBreak, TabStopType
 } = require("docx");
+const B = require("./lib/brand");
 
 const SPINE_PATH = process.argv[2] || "engagement.json";
 const E = JSON.parse(fs.readFileSync(SPINE_PATH, "utf8"));
@@ -29,8 +30,9 @@ const confirmedDays = sumDays(mvps.filter(m => m.status === "confirmed" && !m.is
 const totals = { fullSlate: sumDays(liveMvps), confirmedOnly: confirmedDays, backupPath: confirmedDays + sumDays(backups) };
 const d = i => (mvps[i] && mvps[i].sizing && mvps[i].sizing.consultantDays) || 0;
 
-const CRIMSON = "CC0D2C", CRIMSON_LIGHT = "F5C6CE", INK = "0E0E0C", DARK = "2B2B2B", WHITE = "FFFFFF", GREY = "CCCCCC";
-const BODY = "Inter", SERIF = "Georgia";
+const CRIMSON = B.ACCENT, CRIMSON_LIGHT = B.CRIMSON_LIGHT, INK = B.INK, DARK = B.DARK, WHITE = B.WHITE, GREY = B.GREY;
+const LABEL_TINT = B.LABEL_TINT;
+const BODY = B.SANS, SERIF = B.SERIF;
 const border = { style: BorderStyle.SINGLE, size: 1, color: GREY };
 const borders = { top: border, bottom: border, left: border, right: border };
 const cellMargins = { top: 80, bottom: 80, left: 120, right: 120 };
@@ -121,7 +123,7 @@ function routesTable(item) {
     rows: [
       new TableRow({ tableHeader: true, children: [headerCell(item.headers[0], 1500), headerCell(item.headers[1], 3763), headerCell(item.headers[2], 3763)] }),
       ...item.rows.map(r => new TableRow({ children: [
-        dataCell([cellPara(r.label, { bold: true })], 1500, { fill: "F7F7F5" }),
+        dataCell([cellPara(r.label, { bold: true })], 1500, { fill: LABEL_TINT }),
         dataCell(r.r1, 3763), dataCell(r.r2, 3763)
       ]}))
     ]});
@@ -149,8 +151,8 @@ function daysTable(item) {
       daysRow(item.mvpRows[1], String(d(1)), money(d(1) * dayRate)),
       daysRow(item.mvpRows[2], String(d(2)), money(d(2) * dayRate)),
       daysRow(item.fullLabel, String(totals.fullSlate), money(totals.fullSlate * dayRate), { bold: true, fill: CRIMSON_LIGHT }),
-      daysRow(item.confirmedLabel, String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: "F7F7F5" }),
-      daysRow(item.backupLabel, String(totals.backupPath), money(totals.backupPath * dayRate), { fill: "F7F7F5" }),
+      daysRow(item.confirmedLabel, String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: LABEL_TINT }),
+      daysRow(item.backupLabel, String(totals.backupPath), money(totals.backupPath * dayRate), { fill: LABEL_TINT }),
     ]});
 }
 

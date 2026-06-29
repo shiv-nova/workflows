@@ -34,7 +34,9 @@ const CLIENT = client.name || "[Client]";
 // Brand
 const CRIMSON = B.ACCENT, CRIMSON_LIGHT = B.CRIMSON_LIGHT, INK = B.INK,
       DARK = B.DARK, WHITE = B.WHITE, GREY = B.GREY, BODY = B.SANS, SERIF = B.SERIF;
-const FILLS = { CRIMSON_LIGHT, F7F7F5: "F7F7F5" };
+const LABEL_TINT = B.LABEL_TINT;
+// `F7F7F5` key kept for the spine's fill-by-name contract; value is the brand label tint.
+const FILLS = { CRIMSON_LIGHT, F7F7F5: LABEL_TINT };
 const border = { style: BorderStyle.SINGLE, size: 1, color: GREY };
 const borders = { top: border, bottom: border, left: border, right: border };
 const cm = { top: 80, bottom: 80, left: 120, right: 120 };
@@ -215,9 +217,9 @@ liveMvps.forEach((m, i) => {
 });
 daysRows.push(daysRow(ctl.fullSlate || "Full slate", String(totals.fullSlate), money(amounts.fullSlate), { bold: true, fill: CRIMSON_LIGHT }));
 if (totals.confirmedOnly !== totals.fullSlate)
-  daysRows.push(daysRow(ctl.confirmedOnly || "Confirmed-only", String(totals.confirmedOnly), money(amounts.confirmedOnly), { fill: "F7F7F5" }));
+  daysRows.push(daysRow(ctl.confirmedOnly || "Confirmed-only", String(totals.confirmedOnly), money(amounts.confirmedOnly), { fill: LABEL_TINT }));
 if (backups.length > 0)
-  daysRows.push(daysRow(ctl.backupPath || "Backup path", String(totals.backupPath), money(amounts.backupPath), { fill: "F7F7F5" }));
+  daysRows.push(daysRow(ctl.backupPath || "Backup path", String(totals.backupPath), money(amounts.backupPath), { fill: LABEL_TINT }));
 
 const lic = R.licence || {};
 const subst = {
