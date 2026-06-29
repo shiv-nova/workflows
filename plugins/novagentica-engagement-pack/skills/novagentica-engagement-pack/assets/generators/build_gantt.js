@@ -12,6 +12,7 @@ const {
   Footer, AlignmentType, PageOrientation, BorderStyle, WidthType,
   ShadingType, VerticalAlign, PageNumber, TabStopType
 } = require("docx");
+const B = require("./lib/brand");
 
 // ---- inputs ----
 const SPINE_PATH = process.argv[2] || "engagement.json";
@@ -21,8 +22,9 @@ const C = E.commercials || {};
 const CLIENT = (E.client && E.client.name) || "[Client]";
 
 // ---- brand (fixed document styling, not deal data) ----
-const CRIMSON = "CC0D2C", CRIMSON_LIGHT = "F5C6CE", INK = "0E0E0C",
-      DARK = "2B2B2B", WHITE = "FFFFFF", GREY = "CCCCCC", BODY = "Inter", SERIF = "Georgia";
+const CRIMSON = B.ACCENT, CRIMSON_LIGHT = B.CRIMSON_LIGHT, INK = B.INK,
+      DARK = B.DARK, WHITE = B.WHITE, GREY = B.GREY, BODY = B.SANS, SERIF = B.SERIF;
+const LABEL_TINT = B.LABEL_TINT;
 const border = { style: BorderStyle.SINGLE, size: 1, color: GREY };
 const borders = { top: border, bottom: border, left: border, right: border };
 const cm = { top: 50, bottom: 50, left: 80, right: 80 };
@@ -158,9 +160,9 @@ live.forEach(m => {
 effortRows.push(effRow(tl.fullSlate || "Full slate", String(totals.fullSlate), money(totals.fullSlate * dayRate), { bold: true, fill: CRIMSON_LIGHT }));
 // only show the alternative-path totals when they actually differ from the full slate
 if (totals.confirmedOnly !== totals.fullSlate)
-  effortRows.push(effRow(tl.confirmedOnly || "Confirmed-only", String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: "F7F7F5" }));
+  effortRows.push(effRow(tl.confirmedOnly || "Confirmed-only", String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: LABEL_TINT }));
 if (backups.length > 0)
-  effortRows.push(effRow(tl.backupPath || "Backup path", String(totals.backupPath), money(totals.backupPath * dayRate), { fill: "F7F7F5" }));
+  effortRows.push(effRow(tl.backupPath || "Backup path", String(totals.backupPath), money(totals.backupPath * dayRate), { fill: LABEL_TINT }));
 const effortTable = new Table({ width: { size: 10400, type: WidthType.DXA }, columnWidths: [6400, 1600, 2400], rows: effortRows });
 
 // ---- derived: title strap + key-milestones bullet ----
