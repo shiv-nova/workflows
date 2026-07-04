@@ -104,8 +104,8 @@ app.get("/health", (_req, res) =>
     ok: true,
     service: "nvg-genservice",
     canonical: ["summary", "timeline", "sow", "orderform/subscription", "orderform/ps"],
-    gslides: ["execsummary"],
-    pending: ["proposal", "addendum", "gantt", "proposaldeck"],
+    gslides: ["execsummary", "timeline", "proposaldeck", "summary"],
+    pending: ["proposal", "addendum", "gantt"],
   })
 );
 
@@ -127,9 +127,12 @@ app.post("/generate/sow", auth, (req, res) =>
 );
 
 // native Google Slides (returns batchUpdate JSON; n8n executes it against Google)
-app.post("/generate/gslides/execsummary", auth, (req, res) =>
-  generateGslides(res, { scriptRel: "generators/build_execsummary_gslides.js", body: req.body })
-);
+const GSLIDES = { execsummary: "build_execsummary_gslides.js", timeline: "build_timeline_gslides.js", proposaldeck: "build_proposaldeck_gslides.js", summary: "build_summary6_gslides.js" };
+for (const [name, script] of Object.entries(GSLIDES)) {
+  app.post(`/generate/gslides/${name}`, auth, (req, res) =>
+    generateGslides(res, { scriptRel: `generators/${script}`, body: req.body })
+  );
+}
 
 // pending Step-2 generator conversions (build_sow / build_proposal onto lib+reconcile):
 // app.post("/generate/proposal", ...)  app.post("/generate/addendum", ...)

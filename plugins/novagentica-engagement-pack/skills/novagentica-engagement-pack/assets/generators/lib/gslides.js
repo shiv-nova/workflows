@@ -139,17 +139,33 @@ class Deck {
     return id;
   }
 
-  // Filled rectangle (optionally outlined).
-  rect(slideId, o) {
+  // Affine transform for a box (w,h in inches) at top-left (x,y), optionally rotated
+  // `rotate` degrees about its own centre (pptxgenjs semantics).
+  _transform(o) {
+    if (!o.rotate) {
+      return { scaleX: 1, scaleY: 1, translateX: inEmu(o.x), translateY: inEmu(o.y), unit: "EMU" };
+    }
+    const th = (o.rotate * Math.PI) / 180, c = Math.cos(th), s = Math.sin(th);
+    const w = o.w * EMU, h = o.h * EMU, cx = o.x * EMU + w / 2, cy = o.y * EMU + h / 2;
+    return {
+      scaleX: c, scaleY: c, shearX: -s, shearY: s,
+      translateX: Math.round(cx - (c * w) / 2 + (s * h) / 2),
+      translateY: Math.round(cy - (s * w) / 2 - (c * h) / 2),
+      unit: "EMU",
+    };
+  }
+
+  // Filled rectangle (optionally outlined / rotated / rounded).
+  rect(slideId, o, shapeType = "RECTANGLE") {
     const id = this._id("rect");
     this.requests.push({
       createShape: {
         objectId: id,
-        shapeType: "RECTANGLE",
+        shapeType,
         elementProperties: {
           pageObjectId: slideId,
           size: { width: { magnitude: inEmu(o.w), unit: "EMU" }, height: { magnitude: inEmu(o.h), unit: "EMU" } },
-          transform: { scaleX: 1, scaleY: 1, translateX: inEmu(o.x), translateY: inEmu(o.y), unit: "EMU" },
+          transform: this._transform(o),
         },
       },
     });
@@ -186,6 +202,94 @@ class Deck {
         fields: "lineFill.solidFill.color,weight",
         lineProperties: { lineFill: { solidFill: { color: color(o.color || B.RULE) } }, weight: { magnitude: (o.weight || 0.75) * 12700, unit: "EMU" } },
       },
+    });
+    return id;
+  }
+
+  // Rounded rectangle. `o.line` may be {type:"none"} for no outline.
+  roundRect(slideId, o) {
+    const line = o.line && o.line.type === "none" ? null : o.line;
+    return this.rect(slideId, { ...o, line }, "ROUND_RECTANGLE");
+  }
+
+  // A table. `rows` is [[cell,…],…] where cell is {text, options}; options may set
+  // {fontFace, fontSize, align, bold, color, fill, valign}. `o`: {x, y, w, colW[], rowH, border}.
+  table(slideId, rows, o) {
+    const id = this._id("tbl");
+    const nRows = rows.length, nCols = Math.max(...rows.map((r) => r.length));
+    this.requests.push({
+      createTable: {
+        objectId: id,
+        rows: nRows,
+        columns: nCols,
+        elementProperties: {
+          pageObjectId: slideId,
+          size: { width: { magnitude: inEmu(o.w), unit: "EMU" }, height: { magnitude: inEmu((o.rowH || 0.4) * nRows), unit: "EMU" } },
+          transform: { scaleX: 1, scaleY: 1, translateX: inEmu(o.x), translateY: inEmu(o.y), unit: "EMU" },
+        },
+      },
+    });
+    // Column widths.
+    if (Array.isArray(o.colW)) {
+      o.colW.forEach((w, ci) => {
+        this.requests.push({
+          updateTableColumnProperties: {
+            objectId: id, columnIndices: [ci], fields: "columnWidth",
+            tableColumnProperties: { columnWidth: { magnitude: inEmu(w), unit: "EMU" } },
+          },
+        });
+      });
+    }
+    // Uniform hairline border.
+    const bcol = (o.border && o.border.color) || B.RULE;
+    const bpt = (o.border && o.border.pt) || 0.5;
+    this.requests.push({
+      updateTableBorderProperties: {
+        objectId: id,
+        borderPosition: "ALL",
+        fields: "weight,tableBorderFill.solidFill.color",
+        tableBorderProperties: { weight: { magnitude: bpt * 12700, unit: "EMU" }, tableBorderFill: { solidFill: { color: color(bcol) } } },
+      },
+    });
+    // Cells: fill, text, style, alignment.
+    rows.forEach((row, ri) => {
+      row.forEach((cell, ci) => {
+        const op = (cell && cell.options) || {};
+        const loc = { rowIndex: ri, columnIndex: ci };
+        if (op.fill) {
+          this.requests.push({
+            updateTableCellProperties: {
+              objectId: id, tableRange: { location: loc, rowSpan: 1, columnSpan: 1 },
+              fields: "tableCellBackgroundFill.solidFill.color",
+              tableCellProperties: { tableCellBackgroundFill: { solidFill: { color: color(op.fill) } } },
+            },
+          });
+        }
+        const text = (cell && cell.text) || "";
+        if (!text) return;
+        this.requests.push({ insertText: { objectId: id, cellLocation: loc, text, insertionIndex: 0 } });
+        this.requests.push({
+          updateTextStyle: {
+            objectId: id, cellLocation: loc, textRange: { type: "ALL" },
+            style: {
+              foregroundColor: { opaqueColor: { rgbColor: hexToRgb(op.color || B.INK) } },
+              fontFamily: op.fontFace || B.SANS,
+              bold: !!op.bold,
+              fontSize: { magnitude: op.fontSize || 11.5, unit: "PT" },
+            },
+            fields: "foregroundColor,fontFamily,bold,fontSize",
+          },
+        });
+        if (op.align) {
+          this.requests.push({
+            updateParagraphStyle: {
+              objectId: id, cellLocation: loc, textRange: { type: "ALL" },
+              style: { alignment: { left: "START", center: "CENTER", right: "END" }[op.align] || "START" },
+              fields: "alignment",
+            },
+          });
+        }
+      });
     });
     return id;
   }
