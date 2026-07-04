@@ -144,7 +144,7 @@ Novagentica Word documents follow these conventions:
 |---|---|
 | Primary font | Inter (body), Georgia (quotes/callouts) |
 | Accent colour | `#CC0D2C` (crimson) — headings, table header rows |
-| Background | White (`#FFFFFF`) |
+| Background | Cream (`#FAFBF6`) — the only page background per the Design System |
 | Table header fill | `#CC0D2C` with white text |
 | Heading 1 | Inter Bold 16pt, crimson |
 | Heading 2 | Inter SemiBold 13pt, dark ink `#0E0E0C` |

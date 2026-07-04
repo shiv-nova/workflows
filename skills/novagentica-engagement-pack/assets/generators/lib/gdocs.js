@@ -34,7 +34,10 @@ const PT = (n) => ({ magnitude: n, unit: "PT" });
 class Doc {
   constructor(title) {
     this.title = title;
-    this.requests = [];
+    this.requests = [
+      // cream is the only page background (design token BG) — new Docs default to white.
+      { updateDocumentStyle: { documentStyle: { background: { color: rgb(B.BG) } }, fields: "background" } },
+    ];
     this.cursor = 1;
   }
 

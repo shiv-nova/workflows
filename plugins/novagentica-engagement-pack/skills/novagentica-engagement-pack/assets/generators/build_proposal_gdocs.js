@@ -30,9 +30,10 @@ const F7 = "F7F7F5";
 const doc = new Doc(`Novagentica × ${CLIENT} — Solution Proposal`);
 
 // run-spec → gdocs run (docx sizes are half-points → points via /2)
+// prose runs default to Georgia 11 (design DOCX convention); tables/labels stay Inter.
 function run(r) {
-  if (typeof r === "string") return { text: r, font: BODY, size: 11 };
-  const o = { text: r.t, font: BODY, size: 11 };
+  if (typeof r === "string") return { text: r, font: SERIF, size: 11 };
+  const o = { text: r.t, font: SERIF, size: 11 };
   if (r.b) o.bold = true;
   if (r.c) { o.bold = true; o.color = CRIMSON; }
   if (r.i) { o.italic = true; o.font = SERIF; }
@@ -79,8 +80,8 @@ function daysTable(item) {
 function runsText(v) { if (typeof v === "string") return v; if (Array.isArray(v)) return v.map((r) => (typeof r === "string" ? r : r.t)).join(""); return String(v || ""); }
 
 // ===== COVER =====
-doc.para([{ text: "novagentica", bold: true, color: CRIMSON, size: 15, font: BODY }], { spaceAfter: 2 });
-doc.para([{ text: ID.kicker || "", color: DARK, size: 9, font: BODY }], { spaceAfter: 30 });
+doc.para(B.wordmarkRuns(INK, CRIMSON).map(w => ({ text: w.text, bold: true, color: w.color, size: 15, font: BODY })), { spaceAfter: 2 });
+doc.para([{ text: ID.kicker || "", color: B.MUTED, size: 9, font: BODY }], { spaceAfter: 30 });
 doc.para([{ text: ID.title1 || "", bold: true, size: 28, color: INK, font: BODY }], { spaceAfter: 0 });
 doc.para([{ text: ID.title2 || "", bold: true, size: 28, color: INK, font: BODY }], { spaceAfter: 12 });
 doc.para([{ text: ID.subtitle || "", italic: true, font: SERIF, size: 13, color: DARK }], { spaceAfter: 4 });
@@ -111,7 +112,7 @@ function render(item) {
 
 // Footer with live page numbers is a documented Docs-API limitation (no auto page-number field
 // insertable via batchUpdate) — n8n / a one-off UI step adds it. We stamp the wordmark line at the end.
-doc.para([{ text: "novagentica", bold: true, color: CRIMSON, size: 9, font: BODY }, { text: `    ${CLIENT} · ${ID.footerLabel || ""}`, color: DARK, size: 7, font: BODY }], { spaceAfter: 0 });
+doc.para([...B.wordmarkRuns(INK, CRIMSON).map(w => ({ text: w.text, bold: true, color: w.color, size: 9, font: BODY })), { text: `    ${CLIENT} · ${ID.footerLabel || ""}`, color: B.MUTED, size: 7, font: BODY }], { spaceAfter: 0 });
 
 const payload = doc.payload();
 const out = process.argv[3];

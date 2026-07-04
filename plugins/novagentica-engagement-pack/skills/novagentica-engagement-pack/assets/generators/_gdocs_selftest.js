@@ -21,6 +21,7 @@ const REGISTRY = [
 const KNOWN = new Set([
   "insertText", "updateTextStyle", "updateParagraphStyle", "createParagraphBullets",
   "insertPageBreak", "insertTable", "updateTableCellStyle", "updateTableColumnProperties",
+  "updateDocumentStyle",
 ]);
 const BRAND_HEX = new Set(Object.values(B).filter((v) => typeof v === "string" && /^[0-9A-Fa-f]{6}$/.test(v)).map((v) => v.toUpperCase()));
 ["FFFFFF", "F7F7F5"].forEach((h) => BRAND_HEX.add(h));
