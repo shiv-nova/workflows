@@ -3,3 +3,9 @@ node_modules/
 *.log
 .DS_Store
 .env
+
+# genservice generator folders are populated from skills/ (single source) by
+# `genservice/sync.js` for local dev, and COPYed straight from skills/ in Docker.
+# Never commit these copies — edit the skills instead.
+genservice/generators/
+genservice/orderforms/

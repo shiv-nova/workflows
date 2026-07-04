@@ -51,7 +51,10 @@ The agreed commercial constants are set in the generator scripts, **in one place
 
 ## Brand & structure (in `nvg_helpers.js`)
 
-Cream `#FAFBF6`, crimson `#CC0D2C` accent, ink `#1A1A1A`, Inter (sans) + Georgia (serif), lowercase `novagentica` wordmark masthead, crimson section rules, A4 portrait, "Confidential" header, MSA/Swiss-law footer with page numbers. Keep master legal terms (liability, IP, warranties, confidentiality, data protection) **in the MSA/DPA** — the order forms point to them, they do not restate them.
+Cream `#FAFBF6`, crimson `#CC0D2C` accent, ink `#0E0E0C`, Inter (sans) + Georgia (serif), lowercase `novagentica` wordmark masthead, crimson section rules, A4 portrait, "Confidential" header, MSA/Swiss-law footer with page numbers. Keep master legal terms (liability, IP, warranties, confidentiality, data protection) **in the MSA/DPA** — the order forms point to them, they do not restate them.
+
+> Brand tokens track `lib/brand.js` / the Novagentica Design System (`guidelines/brand.md`);
+> `nvg_helpers.js` inlines them so this skill is self-contained. Do not diverge the values.
 
 ## Guardrails baked in (do not silently undo)
 
