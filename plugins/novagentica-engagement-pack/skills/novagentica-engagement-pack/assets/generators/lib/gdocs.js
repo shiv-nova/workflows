@@ -22,7 +22,7 @@
 const B = require("./brand");
 
 // Table structure index constants (calibration knob — see header).
-const TABLE = { START_PAD: 1, ROW_PAD: 1, CELL_STRIDE: 2 };
+const TABLE = { START_PAD: 2, ROW_PAD: 1, CELL_STRIDE: 2 };
 
 function hexToRgb(hex) {
   const h = String(hex).replace("#", "");
@@ -99,8 +99,9 @@ class Doc {
   // o: { colW?: inches[], border?: {color,pt}, cellPad? }
   table(rows, o = {}) {
     const R = rows.length, C = Math.max(...rows.map((r) => r.length));
-    const tableStart = this.cursor;
-    this.requests.push({ insertTable: { rows: R, columns: C, location: { index: tableStart } } });
+    this.requests.push({ insertTable: { rows: R, columns: C, location: { index: this.cursor } } });
+    // Docs inserts a newline before the table, so the table element starts one index past the cursor.
+    const tableStart = this.cursor + 1;
 
     // Baseline (empty-table) index of each cell's first paragraph.
     const baseOf = (r, c) => tableStart + TABLE.START_PAD + r * (TABLE.ROW_PAD + C * TABLE.CELL_STRIDE) + TABLE.ROW_PAD + c * TABLE.CELL_STRIDE;
@@ -141,16 +142,16 @@ class Doc {
     for (const cell of cells) {
       if (!cell.cell.fill) continue;
       this.requests.push({
+        // tableRange and top-level tableStartLocation are a oneof — set only tableRange.
         updateTableCellStyle: {
-          tableStartLocation: { index: tableStart },
           tableRange: { tableCellLocation: { tableStartLocation: { index: tableStart }, rowIndex: cell.r, columnIndex: cell.c }, rowSpan: 1, columnSpan: 1 },
           tableCellStyle: { backgroundColor: rgb(cell.cell.fill) },
           fields: "backgroundColor",
         },
       });
     }
-    // advance cursor past the filled table (+1 for the paragraph Docs adds after a table).
-    const emptySpan = TABLE.START_PAD + R * (TABLE.ROW_PAD + C * TABLE.CELL_STRIDE) + 1;
+    // advance cursor past the filled table (tableStart already covers the pre-table newline).
+    const emptySpan = TABLE.START_PAD + R * (TABLE.ROW_PAD + C * TABLE.CELL_STRIDE);
     this.cursor = tableStart + emptySpan + acc;
     return tableStart;
   }
