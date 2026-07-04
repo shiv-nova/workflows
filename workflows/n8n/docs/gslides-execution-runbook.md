@@ -19,7 +19,9 @@ genservice ──► { title, slideCount, requests: [ …batchUpdate requests…
   (3. optional) drive.files.update     move presentationId into the target Drive folder
 ```
 
-Reference endpoint live today: `POST /generate/gslides/execsummary`.
+Endpoints live today:
+- Slides (native): `POST /generate/gslides/{execsummary,timeline,proposaldeck,summary}`
+- Docs (native): `POST /generate/gdocs/proposal` (SoW / Gantt / order forms pending — see `HANDOFF-native-google.md`)
 
 ## n8n wiring (per deck)
 
