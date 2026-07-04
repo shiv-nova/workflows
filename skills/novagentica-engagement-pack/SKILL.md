@@ -5,6 +5,8 @@ description: >
 license: Proprietary — Novagentica AG, 2026
 ---
 
+> **Output surface (decision 2026-07-04): Google only.** Finished artefacts are produced as **Google Docs / Google Slides** — the `*_gdocs` / `*_gslides` generators emit `batchUpdate` payloads that n8n/genservice executes. The `.docx`/`.pptx` generators are retired to executable-spec / rollback status (see the Design System `integrations/google/MIGRATION.md`); artefacts without a payload generator yet are produced by duplicating the branded Google masters.
+
 # Novagentica Engagement Pack
 
 > **Front-door router — read first.** `novagentica-presales-solution-design` and `novagentica-engagement-pack` are the two front doors and **must never both run on the same deal**. Decide by one question: *is the use-case slate already agreed?*
@@ -77,7 +79,7 @@ Full schema and the worked example: `references/inputs.md`, `references/data-mod
 
 ## Brand (fixed — never an input)
 
-Cream `#FAFBF6` background, crimson `#CC0D2C` accent, ink `#0E0E0C`, muted `#8A8A86`, hairline `#D9D9D2`. Inter for structure/labels, Georgia for prose/emphasis. `novagentica` wordmark bottom-left on every slide ("nova" ink + "gentica" crimson). DOCX: crimson H1, table header rows crimson/white, wordmark footer. See `assets/brand.md`. These come from `novagentica-presentation`; do not invent a new look.
+Cream `#FAFBF6` background, crimson `#CC0D2C` accent, ink `#0E0E0C`, muted `#8A8A86`, hairline `#D9D9D2`. Inter for structure/labels, Gelasio for prose/emphasis. `novagentica` wordmark bottom-left on every slide ("nova" ink + "gentica" crimson). DOCX: crimson H1, table header rows crimson/white, wordmark footer. See `assets/brand.md`. These come from `novagentica-presentation`; do not invent a new look.
 
 ## QA checklist (before delivering)
 

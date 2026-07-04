@@ -5,6 +5,10 @@ description: >
 license: Proprietary — Novagentica AG, 2026
 ---
 
+> **Brand.** Before generating anything, read `assets/brand.md`. The Novagentica look is fixed — crimson `#CC0D2C`, ink `#0E0E0C`, paper `#FAFBF6`, Inter (structure) + Gelasio (prose serif), two-tone `nova`(ink)+`gentica`(crimson) wordmark. Never invent a new look.
+
+> **Output surface (decision 2026-07-04): Google only.** Delivery artefacts are produced as **Google Docs / Google Slides** by duplicating the branded masters (`BuildBrandedDoc.gs` / `BuildBrandedDeck.gs` in the Design System). `.docx`/`.pptx` are the rollback path (`File → Download`), not the production output.
+
 # Novagentica Delivery Artefacts Skill
 
 Produce client-ready delivery artefacts for Novagentica platform engagements. Outputs include Gantt/timeline tables, Statements of Work, RACI matrices, and governance documents — in either `.docx` (Word) or `.pptx` (Novagentica-branded slides) format, or both.
@@ -142,13 +146,13 @@ Novagentica Word documents follow these conventions:
 
 | Element | Style |
 |---|---|
-| Primary font | Inter (body), Georgia (quotes/callouts) |
+| Primary font | Inter (body), Gelasio (quotes/callouts) |
 | Accent colour | `#CC0D2C` (crimson) — headings, table header rows |
 | Background | Cream (`#FAFBF6`) — the only page background per the Design System |
 | Table header fill | `#CC0D2C` with white text |
 | Heading 1 | Inter Bold 16pt, crimson |
 | Heading 2 | Inter SemiBold 13pt, dark ink `#0E0E0C` |
-| Body text | Georgia 11pt, `#0E0E0C` |
+| Body text | Gelasio 11pt, `#0E0E0C` |
 | Footer | "novagentica" wordmark left, page number right, Inter 9pt |
 
 Apply these consistently across all `.docx` outputs. If Inter is unavailable in the docx build environment, fall back to Arial.

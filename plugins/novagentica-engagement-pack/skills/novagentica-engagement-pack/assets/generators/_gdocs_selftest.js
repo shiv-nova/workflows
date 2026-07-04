@@ -24,7 +24,7 @@ const KNOWN = new Set([
   "updateDocumentStyle",
 ]);
 const BRAND_HEX = new Set(Object.values(B).filter((v) => typeof v === "string" && /^[0-9A-Fa-f]{6}$/.test(v)).map((v) => v.toUpperCase()));
-["FFFFFF", "F7F7F5"].forEach((h) => BRAND_HEX.add(h));
+["FFFFFF"].forEach((h) => BRAND_HEX.add(h));
 const hex = (rgb) => [rgb.red, rgb.green, rgb.blue].map((v) => Math.round((v || 0) * 255).toString(16).padStart(2, "0")).join("").toUpperCase();
 
 let totalFails = 0;

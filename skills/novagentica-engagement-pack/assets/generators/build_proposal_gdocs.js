@@ -26,11 +26,11 @@ const d = (i) => (mvps[i] && mvps[i].sizing && mvps[i].sizing.consultantDays) ||
 
 const CRIMSON = B.ACCENT, CRIMSON_LIGHT = B.CRIMSON_LIGHT, INK = B.INK, DARK = B.DARK, WHITE = B.WHITE;
 const BODY = B.SANS, SERIF = B.SERIF;
-const F7 = "F7F7F5";
+const F7 = B.PAPER_2;
 const doc = new Doc(`Novagentica × ${CLIENT} — Solution Proposal`);
 
 // run-spec → gdocs run (docx sizes are half-points → points via /2)
-// prose runs default to Georgia 11 (design DOCX convention); tables/labels stay Inter.
+// prose runs default to Gelasio 11 (design DOCX convention); tables/labels stay Inter.
 function run(r) {
   if (typeof r === "string") return { text: r, font: SERIF, size: 11 };
   const o = { text: r.t, font: SERIF, size: 11 };

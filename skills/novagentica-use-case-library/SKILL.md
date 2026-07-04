@@ -75,7 +75,7 @@ Never present a Modelled figure as if it were Live. If you don't have a defensib
 1. **Ground** (read the knowledge skill; confirm vertical + function).
 2. **Populate the metadata row** (above). If {vertical, function, domain, outcome, runtime} is materially missing and can't be inferred, ask via `ask_user_input_v0` before continuing.
 3. **Draft the three slides** per `references/use-case-tile.md`, in Novagentica voice (short, declarative, antithesis subheads). Apply the maturity discipline to every figure.
-4. **Render** by handing the populated tile to `novagentica-presentation`: Spine C maps to brand layouts **#2 (themed rows) → #7 (architecture flow) → #4 (numbered stack)**; cream `#FAFBF6`, crimson `#CC0D2C`, Inter + Georgia, wordmark on every slide. Do not invent a new look.
+4. **Render** by handing the populated tile to `novagentica-presentation`: Spine C maps to brand layouts **#2 (themed rows) → #7 (architecture flow) → #4 (numbered stack)**; cream `#FAFBF6`, crimson `#CC0D2C`, Inter+Gelasio, wordmark on every slide. Do not invent a new look.
 5. **File it**: save the deck to `library/<vertical>/<use-case-slug>.pptx` and **append the metadata row to the library index** (`library/index.csv`) so the catalogue stays filterable. The index — not the decks — is how the library is browsed and how solution-design finds candidates.
 6. **QA** visually (the presentation skill's QA recipe). Fix once; don't loop.
 

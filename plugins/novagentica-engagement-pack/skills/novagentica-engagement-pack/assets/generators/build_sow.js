@@ -34,7 +34,7 @@ const CLIENT = client.name || "[Client]";
 // Brand
 const CRIMSON = B.ACCENT, CRIMSON_LIGHT = B.CRIMSON_LIGHT, INK = B.INK,
       DARK = B.DARK, WHITE = B.WHITE, GREY = B.GREY, BODY = B.SANS, SERIF = B.SERIF;
-const FILLS = { CRIMSON_LIGHT, F7F7F5: "F7F7F5" };
+const FILLS = { CRIMSON_LIGHT, F7F7F5: B.PAPER_2 /* legacy key, PAPER_2 token */ };
 const border = { style: BorderStyle.SINGLE, size: 1, color: GREY };
 const borders = { top: border, bottom: border, left: border, right: border };
 const cm = { top: 80, bottom: 80, left: 120, right: 120 };
@@ -62,7 +62,7 @@ const firstName = s => String(s || "").split(" — ")[0];
 
 function h1(t) { return new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(t)] }); }
 function h2(t) { return new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun(t)] }); }
-// body prose is Georgia 11pt (design DOCX convention); tables/labels stay Inter via cp()/hcell.
+// body prose is Gelasio 11pt (design DOCX convention); tables/labels stay Inter via cp()/hcell.
 function body(runs, opts = {}) {
   const arr = Array.isArray(runs) ? runs : [new TextRun({ text: runs, font: SERIF })];
   return new Paragraph({ spacing: { after: 140, line: 276 }, ...opts, children: arr });

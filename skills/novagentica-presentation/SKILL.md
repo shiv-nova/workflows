@@ -4,6 +4,10 @@ description: Use this skill any time Martin (founder of Novagentica) asks for a 
 license: Proprietary — Novagentica AG, 2026
 ---
 
+> **Brand.** Before generating anything, read `assets/brand.md`. The Novagentica look is fixed — crimson `#CC0D2C`, ink `#0E0E0C`, paper `#FAFBF6`, Inter (structure) + Gelasio (prose serif), two-tone `nova`(ink)+`gentica`(crimson) wordmark. Never invent a new look.
+
+> **Output surface (decision 2026-07-04): Google only.** Decks are produced as **Google Slides**: duplicate the "Novagentica — Master Deck" (built once via the Design System's `BuildBrandedDeck.gs → buildMasterDeck`) and populate it; retrofit third-party decks with `BrandSlides.gs → brandThisDeck`. `.pptx` output is the rollback path only (procurement portals that reject Google exports: `File → Download → PPTX`).
+
 # Novagentica Presentation Skill
 
 Build presentations in the canonical Novagentica visual identity. The reference is the canonical Novagentica keynote template — restrained, editorial, executive. Every slide uses the cream/white background with the **novagentica wordmark in the bottom-left footer**. This skill covers everything from a single-slide insight card to a full keynote deck.
@@ -32,17 +36,17 @@ These are non-negotiable. Use them exactly.
 | Element | Font | Weight | Size |
 |---|---|---|---|
 | Headline (the big sentence) | Inter (sans, fallback Arial Black) | 800 | 44–72pt |
-| Headline italic accent | Inter Italic / Georgia Italic | 800/Bold Italic | matches headline |
-| Subhead (often crimson italic) | Georgia Italic / Inter Italic | Bold Italic | 22–32pt |
+| Headline italic accent | Inter Italic / Gelasio Italic | 800/Bold Italic | matches headline |
+| Subhead (often crimson italic) | Gelasio Italic / Inter Italic | Bold Italic | 22–32pt |
 | Eyebrow label (e.g. "OUTLINE", "NEW REALITY") | Inter | Bold, ALL CAPS, 1.5px tracking | 11–12pt |
-| Body / row text | Georgia (serif) | Regular | 14–20pt |
+| Body / row text | Gelasio (serif) | Regular | 14–20pt |
 | Row label (e.g. "TARIFF", "DEMAND") | Inter | Bold, ALL CAPS | 11–13pt |
-| Italic emphasis lines | Georgia Italic | Bold Italic | matches body |
+| Italic emphasis lines | Gelasio Italic | Bold Italic | matches body |
 | Footer wordmark "novagentica" | Inter | Bold (Black) | 14pt — "nova" in INK, "gentica" in ACCENT |
 | Footer page number | Inter | Regular | 9–10pt |
-| Section roman numeral (header) | Georgia Italic | Bold Italic | 14pt, crimson |
+| Section roman numeral (header) | Gelasio Italic | Bold Italic | 14pt, crimson |
 
-> **The "feel"**: editorial print magazine meets Swiss design. Lots of whitespace. Hairline rules. Two type families doing two jobs (Inter for structure/labels, Georgia for prose/emphasis). Crimson appears sparingly and deliberately — never as a fill block other than the small logo mark, the wordmark's crimson half, and the vertical divider in two-column layouts.
+> **The "feel"**: editorial print magazine meets Swiss design. Lots of whitespace. Hairline rules. Two type families doing two jobs (Inter for structure/labels, Gelasio for prose/emphasis). Crimson appears sparingly and deliberately — never as a fill block other than the small logo mark, the wordmark's crimson half, and the vertical divider in two-column layouts.
 
 ---
 
@@ -60,7 +64,7 @@ Every slide follows this skeleton (slide is 13.333" × 7.5" widescreen):
 │  EYEBROW LABEL                                             │ ← 12pt bold caps muted
 │                                                            │
 │  Big headline sentence.                                    │ ← 44–72pt Inter Black
-│  Italic crimson subhead.                                   │ ← 22–28pt Georgia Italic
+│  Italic crimson subhead.                                   │ ← 22–28pt Gelasio Italic
 │                                                            │
 │  ────────────────────────────────────────────────────────  │ ← mid hairline rule
 │                                                            │
@@ -155,7 +159,7 @@ The **wordmark in the bottom-left footer is mandatory on every slide** and is no
 ## Pitfalls and recovery
 
 - **pptxgenjs uses inches, not points, for positioning.** Convert: 1in = 96px @ 96dpi. The slide is 13.333" × 7.5".
-- **Georgia and Inter must be referenced by exact PowerPoint name** (`Georgia`, `Inter`). If Inter isn't available on the target machine, fall back: `Helvetica` → `Arial`. Set both in pptxgenjs as comma-separated.
+- **Gelasio and Inter must be referenced by exact PowerPoint name** (`Gelasio`, `Inter`). If Inter isn't available on the target machine, fall back: `Helvetica` → `Arial`. Set both in pptxgenjs as comma-separated.
 - **Italic crimson subhead is a single text frame**, not two. Use a `text:` array with mixed `options` for bold/italic toggles within one paragraph. Pattern is in `references/layouts.md`.
 - **Roman numerals for sections** (I., II., III., IV., V.) live in the header band's left position, replacing the logo mark on body slides. Slide 1 (outline) and the final slide (CTA) keep the logo mark.
 - **Headline sizing**: pptxgenjs renders Inter Black slightly wider than Keynote does. Use 44pt for long headlines (e.g. "Authority. Boundaries. Evidence."), 48pt for medium (e.g. "Every day, a new exception."), 56pt for short, and 96pt for one-word heroes (e.g. "Sovereignty."). When in doubt, set `fit: "shrink"` on the headline text frame.

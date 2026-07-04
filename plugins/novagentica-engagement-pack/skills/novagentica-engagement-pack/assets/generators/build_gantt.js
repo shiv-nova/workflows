@@ -74,7 +74,7 @@ function headerRow() {
   ]});
 }
 function sectionRow(label) {
-  return new TableRow({ children: [tc(TOTAL, [p(label, { bold: true, color: WHITE, size: 16 })], { span: 2 + WEEKS.length, fill: DARK })] });
+  return new TableRow({ children: [tc(TOTAL, [p(label, { bold: true, color: WHITE, size: 16 })], { span: 2 + WEEKS.length, fill: INK })] });
 }
 function taskRow(ws, owner, activeWeeks = [], milestoneWeek = null, opts = {}) {
   const active = activeWeeks.map(w => WIDX[w]).filter(i => i !== undefined);
@@ -159,9 +159,9 @@ live.forEach(m => {
 effortRows.push(effRow(tl.fullSlate || "Full slate", String(totals.fullSlate), money(totals.fullSlate * dayRate), { bold: true, fill: CRIMSON_LIGHT }));
 // only show the alternative-path totals when they actually differ from the full slate
 if (totals.confirmedOnly !== totals.fullSlate)
-  effortRows.push(effRow(tl.confirmedOnly || "Confirmed-only", String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: "F7F7F5" }));
+  effortRows.push(effRow(tl.confirmedOnly || "Confirmed-only", String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: B.PAPER_2 }));
 if (backups.length > 0)
-  effortRows.push(effRow(tl.backupPath || "Backup path", String(totals.backupPath), money(totals.backupPath * dayRate), { fill: "F7F7F5" }));
+  effortRows.push(effRow(tl.backupPath || "Backup path", String(totals.backupPath), money(totals.backupPath * dayRate), { fill: B.PAPER_2 }));
 const effortTable = new Table({ width: { size: 10400, type: WidthType.DXA }, columnWidths: [6400, 1600, 2400], rows: effortRows });
 
 // ---- derived: title strap + key-milestones bullet ----

@@ -54,7 +54,7 @@ present. Flag any of the following as a defect:
   lighter near-black like `#1A1A1A` or `#000`). Crimson `#CC0D2C` is an accent only — never a
   large fill. Warm greys (`#5C5C58`, `#8A8A86`, `#D9D9D2`); never blue-grey. No gradients,
   photography-as-background, textures, or illustration.
-- **Type.** Inter for structure (headlines, ALL-CAPS tracked eyebrows, labels, data); Georgia
+- **Type.** Inter for structure (headlines, ALL-CAPS tracked eyebrows, labels, data); Gelasio
   for prose, section titles, and crimson italic subheads. No third display face.
 - **Wordmark.** `novagentica`, lowercase, two-tone — `nova` in ink, `gentica` in crimson;
   present and correct (bottom-left on slides; masthead + footer on documents).

@@ -45,7 +45,7 @@ co-invested work. Licence is "blended" only in options mode; in ladder mode it i
 - Salesforce Agentforce belongs in *positioning/capability* runtime lists; do **not** inject it into a
   deal's in-scope runtimes (respect the explicit list).
 - Brand tokens live in `lib/brand.js` only: cream `#FAFBF6`, crimson `#CC0D2C`, ink `#0E0E0C`,
-  Inter + Georgia, lowercase `novagentica` wordmark. Product narrative fixed: NO PASSPORT = NO
+  Inter+Gelasio, lowercase `novagentica` wordmark. Product narrative fixed: NO PASSPORT = NO
   EXECUTION, AQVP, CDAP™, Crypto Passport.
 
 ## 5. Shared libraries (no per-skill copies)

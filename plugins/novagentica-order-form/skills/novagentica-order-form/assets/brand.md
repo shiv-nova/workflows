@@ -23,7 +23,7 @@ Status (muted, editorial — never bright UI candy): pass `#2E6B4F`, caution `#9
 
 ## Type
 - **Inter** — headlines (semibold/bold), eyebrow labels (ALL CAPS, tracked `0.16em`), row labels, UI, data.
-- **Georgia** — display / section titles, body prose, italic emphasis, crimson Georgia-italic subheads, numerals.
+- **Gelasio** (Georgia-metric serif; the one serif on every surface incl. Google) — display / section titles, body prose, italic emphasis, crimson Gelasio-italic subheads, numerals.
 - Scale: 64 display · 44 section title · 34 sub-head · 28/22/18 heads · 15 body · 13 dense · 10 eyebrow.
 - **Wordmark**: `novagentica` — Inter semibold, tight tracking, lowercase, **two-tone: `nova` in INK + `gentica` in ACCENT**, no trailing mark. On ink grounds `nova` flips to BG_LIGHT; `gentica` stays crimson. Sits bottom-left of every slide.
 
@@ -34,15 +34,15 @@ Status (muted, editorial — never bright UI candy): pass `#2E6B4F`, caution `#9
 
 ## DOCX conventions
 - A4. Proposal / SoW portrait; Delivery Timeline landscape.
-- H1 Inter bold crimson; H2 Inter bold ink; body Georgia 11pt.
+- H1 Inter bold crimson; H2 Inter bold ink; body Gelasio 11pt.
 - Table header rows: crimson fill, white bold text. Highlighted/total rows: CRIMSON_LIGHT / TINT fill.
 - Footer: `novagentica` wordmark (two-tone) left, confidential strapline, page number right, crimson top rule.
 
 ## PPTX conventions (16:9, 13.333 × 7.5")
 - Header band: roman numeral or logo mark top-left, short crimson underline, meta text top-right, top hairline rule.
-- Hero: eyebrow → big Inter headline → crimson Georgia-italic subhead.
+- Hero: eyebrow → big Inter headline → crimson Gelasio-italic subhead.
 - Body patterns: themed rows · numbered stack · two-column (crimson divider) · architecture-flow tiles (crimson number badges) · comparison table (highlighted column in TINT).
-- Closer: hairline rule + italic Georgia tagline; bold crimson ending optional.
+- Closer: hairline rule + italic Gelasio tagline; bold crimson ending optional.
 - Crimson is an accent, never a fill area except: the wordmark, two-column divider, number badges, milestone diamonds, the highlighted tier column, and table-header rows.
 
 ## Voice

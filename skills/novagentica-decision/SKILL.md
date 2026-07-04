@@ -15,6 +15,8 @@ description: >
 license: Proprietary — Novagentica AG, 2026
 ---
 
+> **Output surface (decision 2026-07-04): Google only.** The Decision Memo is produced as a **Google Doc** (duplicate the master via `BuildBrandedDoc.gs → buildMasterDoc`) plus the MD version. DOCX output is the rollback path (`File → Download`).
+
 # Novagentica Decision
 
 Turns an internal strategic question into a recorded, defensible decision: framed → grounded
@@ -138,7 +140,7 @@ what keep it honest; do not skip them to save time:
 ## Brand (fixed — never an input)
 
 Cream `#FAFBF6` background, crimson `#CC0D2C` accent, ink `#0E0E0C`, muted `#8A8A86`, hairline
-`#D9D9D2`. Inter for structure/labels, Georgia for prose/emphasis. `novagentica` wordmark
+`#D9D9D2`. Inter for structure/labels, Gelasio for prose/emphasis. `novagentica` wordmark
 (`nova` ink + `gentica` crimson). DOCX: crimson H1, table header rows crimson on white, wordmark
 footer. These come from `novagentica-presentation`; do not invent a new look.
 

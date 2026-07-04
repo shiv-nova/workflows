@@ -11,7 +11,7 @@ const {
 // order-form skill is installed on its own, without the engagement-pack lib/.
 const T = {
   CRIMSON: "CC0D2C", CREAM: "FAFBF6", CREAM2: "F2F2EC", INK: "0E0E0C",
-  GREY: "8A8A86", HAIR: "D9D9D2", NOTECLR: "9A6B12", SANS: "Inter", SERIF: "Georgia",
+  GREY: "8A8A86", HAIR: "D9D9D2", NOTECLR: "9A6B12", SANS: "Inter", SERIF: "Gelasio",
   CONTENT_W: 9026, HALF: 4513,
 };
 const BOX = "\u2610";

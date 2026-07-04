@@ -123,7 +123,7 @@ function routesTable(item) {
     rows: [
       new TableRow({ tableHeader: true, children: [headerCell(item.headers[0], 1500), headerCell(item.headers[1], 3763), headerCell(item.headers[2], 3763)] }),
       ...item.rows.map(r => new TableRow({ children: [
-        dataCell([cellPara(r.label, { bold: true })], 1500, { fill: "F7F7F5" }),
+        dataCell([cellPara(r.label, { bold: true })], 1500, { fill: B.PAPER_2 }),
         dataCell(r.r1, 3763), dataCell(r.r2, 3763)
       ]}))
     ]});
@@ -151,8 +151,8 @@ function daysTable(item) {
       daysRow(item.mvpRows[1], String(d(1)), money(d(1) * dayRate)),
       daysRow(item.mvpRows[2], String(d(2)), money(d(2) * dayRate)),
       daysRow(item.fullLabel, String(totals.fullSlate), money(totals.fullSlate * dayRate), { bold: true, fill: CRIMSON_LIGHT }),
-      daysRow(item.confirmedLabel, String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: "F7F7F5" }),
-      daysRow(item.backupLabel, String(totals.backupPath), money(totals.backupPath * dayRate), { fill: "F7F7F5" }),
+      daysRow(item.confirmedLabel, String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: B.PAPER_2 }),
+      daysRow(item.backupLabel, String(totals.backupPath), money(totals.backupPath * dayRate), { fill: B.PAPER_2 }),
     ]});
 }
 

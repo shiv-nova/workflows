@@ -18,7 +18,7 @@ const client = E.client || {};
 
 // Tokens
 const BG = "FAFBF6", INK = "0E0E0C", ACCENT = "CC0D2C", MUTED = "8A8A86", RULE = "D9D9D2";
-const SANS = "Inter", SERIF = "Georgia";
+const SANS = "Inter", SERIF = "Gelasio";
 const M = 0.6, W = 13.333, CW = W - 2 * M;
 const TOTAL = 6;
 

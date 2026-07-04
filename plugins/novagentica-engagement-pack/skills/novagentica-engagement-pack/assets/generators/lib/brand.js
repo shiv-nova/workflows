@@ -25,7 +25,7 @@ module.exports = {
 
   // Type
   SANS: "Inter",           // structure / labels
-  SERIF: "Georgia",        // prose / emphasis
+  SERIF: "Gelasio",        // prose / emphasis
 
   // Wordmark: "nova" in INK + "gentica" in ACCENT, lowercase, bold.
   wordmarkRuns(InkColor, AccentColor) {
