@@ -188,6 +188,6 @@ const doc = new Document({
   }]
 });
 Packer.toBuffer(doc).then(buffer => {
-  fs.writeFileSync(process.argv[3] || "Novagentica-Hensoldt-SolutionProposal-v1.2.docx", buffer);
+  fs.writeFileSync(process.argv[3] || `${(E.output && E.output.fileStem) || `Novagentica-${CLIENT}`}-SolutionProposal-v${(E.output && E.output.version) || "1.0"}.docx`, buffer);
   console.log("proposal written");
 });

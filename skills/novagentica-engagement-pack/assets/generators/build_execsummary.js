@@ -171,4 +171,4 @@ rule(s, 6.45);
 s.addText(norm(D.askLine), { x: M, y: 6.55, w: CW, h: 0.4, fontFace: SERIF, fontSize: 16, color: INK });
 footer(s, 6);
 
-p.writeFile({ fileName: process.argv[3] || "Novagentica-Hensoldt-ExecutiveSummary-v1.0.pptx" }).then(() => console.log("deck written"));
+p.writeFile({ fileName: process.argv[3] || `${(E.output && E.output.fileStem) || `Novagentica-${CLIENT}`}-ExecutiveSummary-v${(E.output && E.output.version) || "1.0"}.pptx` }).then(() => console.log("deck written"));

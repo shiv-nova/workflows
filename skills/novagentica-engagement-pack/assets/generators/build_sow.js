@@ -16,7 +16,7 @@ const { money: fmtMoney } = require("./lib/format");
 const { reconcile } = require("./lib/commercials");
 const { preflight, report } = require("./lib/preflight");
 
-const SPINE_PATH = process.argv[2] || path.join(__dirname, "..", "engagement.example.json");
+const SPINE_PATH = process.argv[2] || "engagement.json"; // explicit spine or cwd engagement.json — never a customer fixture
 const E = require(path.resolve(SPINE_PATH));
 const R = reconcile(E);
 // Prompt, don't fabricate: missing critical inputs stop generation with questions.

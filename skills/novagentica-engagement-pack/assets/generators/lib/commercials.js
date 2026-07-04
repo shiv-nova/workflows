@@ -135,7 +135,7 @@ function reconcileLicence(lic, tiers, currency, clientName, warnings) {
     if (io.promoMonths > (initialMonths || Infinity)) warnings.push(`introOffer.promoMonths (${io.promoMonths}) exceeds initial term.`);
   }
   // year1 licence: honest default is the quoted annual fee. A blended figure is a
-  // commercial decision (Felix) — only emit one if the brief sets it explicitly.
+  // commercial decision (commercial lead) — only emit one if the brief sets it explicitly.
   const year1 = (typeof lic.year1 === "number") ? lic.year1 : annualFee;
   const addOns = (lic.addOns || []).map((a) => ({ ...a }));
   return {

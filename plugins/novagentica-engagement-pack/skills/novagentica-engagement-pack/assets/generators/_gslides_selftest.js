@@ -18,7 +18,7 @@ const REGISTRY = [
     probes: (E) => { const X = (E.decks || {}).execSummary || {}; return [X.coverHeadline, X.situationHeadline, X.slateHeadline]; } },
   { name: "timeline", gen: "build_timeline_gslides.js", spine: EXAMPLE, probes: () => [] },
   { name: "proposaldeck", gen: "build_proposaldeck_gslides.js", spine: LEGACY, probes: () => [] },
-  { name: "summary6", gen: "build_summary6_gslides.js", spine: path.join(__dirname, "..", "porsche.trial.engagement.json"), force: true, probes: () => [] },
+  { name: "summary6", gen: "build_summary6_gslides.js", spine: path.join(__dirname, "..", "engagement.example.json"), force: true, probes: () => [] },
 ];
 
 const KNOWN = new Set([

@@ -9,7 +9,7 @@ const { money, perDay, perYear, fmtDate } = require("./lib/format");
 const { reconcile } = require("./lib/commercials");
 const { preflight, report } = require("./lib/preflight");
 
-const briefPath = process.argv[2] || path.join(__dirname, "..", "engagement.example.json");
+const briefPath = process.argv[2] || "engagement.json"; // explicit spine or cwd engagement.json — never a customer fixture
 const E = require(path.resolve(briefPath));
 const R = reconcile(E);
 
@@ -163,7 +163,7 @@ eyebrow(s, "SOLUTION SUMMARY", 1.45);
 headline(s, "Agentic AI under\nenforced authority.", 1.95, 48);
 subhead(s, `${numWord(nonBackup.length).replace(/^\w/, (c) => c.toUpperCase())} MVPs · the plan · the cost.`, 4.0);
 rule(s, 4.7);
-deck.textBox(s, `Prepared for ${C.sponsor || "[sponsor]"} · ${C.name || "[client]"} · Novagentica · June 2026`, { x: M, y: 4.85, w: CW, h: 0.35, font: SERIF, italic: true, size: 14, color: MUTED });
+deck.textBox(s, `Prepared for ${C.sponsor || "[sponsor]"} · ${C.name || "[client]"} · Novagentica · ${((E.proposalDoc || {}).identity || {}).date || "[date]"}`, { x: M, y: 4.85, w: CW, h: 0.35, font: SERIF, italic: true, size: 14, color: MUTED });
 closer(s, [{ text: START ? START.coverCloser : "Commercial summary.", options: { italic: true } }]);
 footer(s, 1);
 

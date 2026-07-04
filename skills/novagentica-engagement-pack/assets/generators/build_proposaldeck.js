@@ -244,4 +244,4 @@ rule(s, 6.4);
 s.addText(norm(PD.nextSteps.askLine), { x: M, y: 6.5, w: CW, h: 0.5, fontFace: SERIF, fontSize: 14.5, color: INK, lineSpacing: 18 });
 footer(s, 13);
 
-p.writeFile({ fileName: process.argv[3] || "Novagentica-Hensoldt-SolutionProposal-Deck-v1.0.pptx" }).then(() => console.log("proposal deck written"));
+p.writeFile({ fileName: process.argv[3] || `${(E.output && E.output.fileStem) || `Novagentica-${CLIENT}`}-SolutionProposal-Deck-v${(E.output && E.output.version) || "1.0"}.pptx` }).then(() => console.log("proposal deck written"));

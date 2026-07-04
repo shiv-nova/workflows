@@ -7,7 +7,7 @@ const hensoldt = require("./assets/engagement.example.json");
 let pass = 0;
 const ok = (cond, msg) => { assert(cond, msg); console.log("  ✓ " + msg); pass++; };
 
-console.log("\n[1] Hensoldt — derived scenarios must reproduce the known-good hand-typed figures");
+console.log("\n[1] Reference spine — derived scenarios must reproduce the known-good hand-typed figures");
 const r = reconcile(hensoldt);
 ok(r.scenarios.confirmed.days === 22 && r.scenarios.confirmed.amount === 55000,
    `confirmed-only = ${r.scenarios.confirmed.days}d / ${money(r.scenarios.confirmed.amount, "CHF")} (expect 22 / CHF 55,000)`);

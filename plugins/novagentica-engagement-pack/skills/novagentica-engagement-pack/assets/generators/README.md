@@ -19,7 +19,7 @@ fixed copy — it belongs to the product, not the deal.
 ## Run
 ```
 npm install pptxgenjs docx
-node build_summary6.js [path/to/engagement.json]   # default: ../engagement.example.json
+node build_summary6.js [path/to/engagement.json]   # default: ./engagement.json (fails loudly if absent)
 ```
 Output filename comes from `output.fileStem` + `output.version`.
 
