@@ -82,7 +82,7 @@ const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.doc
 // Native Google-Slides variant: the generator emits a batchUpdate payload (JSON), not a file.
 // The service returns { title, slideCount, requests }; n8n runs presentations.create then
 // presentations.batchUpdate against Google with its own credentials (this stays auth-free).
-async function generateGslides(res, { scriptRel, body }) {
+async function generateJsonPayload(res, { scriptRel, body }) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "nvg-"));
   try {
     if (!body || !body.brief) return res.status(400).json({ error: "brief required in body.brief" });
@@ -105,7 +105,8 @@ app.get("/health", (_req, res) =>
     service: "nvg-genservice",
     canonical: ["summary", "timeline", "sow", "orderform/subscription", "orderform/ps"],
     gslides: ["execsummary", "timeline", "proposaldeck", "summary"],
-    pending: ["proposal", "addendum", "gantt"],
+    gdocs: ["proposal"],
+    pending: ["sow", "gantt", "orderform/subscription", "orderform/ps", "addendum"],
   })
 );
 
@@ -130,7 +131,15 @@ app.post("/generate/sow", auth, (req, res) =>
 const GSLIDES = { execsummary: "build_execsummary_gslides.js", timeline: "build_timeline_gslides.js", proposaldeck: "build_proposaldeck_gslides.js", summary: "build_summary6_gslides.js" };
 for (const [name, script] of Object.entries(GSLIDES)) {
   app.post(`/generate/gslides/${name}`, auth, (req, res) =>
-    generateGslides(res, { scriptRel: `generators/${script}`, body: req.body })
+    generateJsonPayload(res, { scriptRel: `generators/${script}`, body: req.body })
+  );
+}
+
+// native Google Docs (returns documents.batchUpdate JSON; n8n executes it against Google)
+const GDOCS = { proposal: "build_proposal_gdocs.js" };
+for (const [name, script] of Object.entries(GDOCS)) {
+  app.post(`/generate/gdocs/${name}`, auth, (req, res) =>
+    generateJsonPayload(res, { scriptRel: `generators/${script}`, body: req.body })
   );
 }
 

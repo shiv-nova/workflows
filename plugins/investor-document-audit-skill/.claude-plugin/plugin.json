@@ -2,7 +2,7 @@
   "name": "investor-document-audit-skill",
   "displayName": "Investor Document Audit",
   "description": "Audit investor documents — decks, models, memos — with a critical, red-team lens.",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "author": {
     "name": "Novagentica AG"
   },
