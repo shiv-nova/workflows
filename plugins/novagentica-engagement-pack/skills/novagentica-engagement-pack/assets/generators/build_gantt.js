@@ -21,8 +21,9 @@ const C = E.commercials || {};
 const CLIENT = (E.client && E.client.name) || "[Client]";
 
 // ---- brand (fixed document styling, not deal data) ----
-const CRIMSON = "CC0D2C", CRIMSON_LIGHT = "F5C6CE", INK = "0E0E0C",
-      DARK = "2B2B2B", WHITE = "FFFFFF", GREY = "CCCCCC", BODY = "Inter", SERIF = "Georgia";
+const B = require("./lib/brand");
+const CRIMSON = B.ACCENT, CRIMSON_LIGHT = B.CRIMSON_LIGHT, INK = B.INK,
+      DARK = B.DARK, WHITE = B.WHITE, GREY = B.GREY, BODY = B.SANS, SERIF = B.SERIF;
 const border = { style: BorderStyle.SINGLE, size: 1, color: GREY };
 const borders = { top: border, bottom: border, left: border, right: border };
 const cm = { top: 50, bottom: 50, left: 80, right: 80 };
@@ -73,7 +74,7 @@ function headerRow() {
   ]});
 }
 function sectionRow(label) {
-  return new TableRow({ children: [tc(TOTAL, [p(label, { bold: true, color: WHITE, size: 16 })], { span: 2 + WEEKS.length, fill: DARK })] });
+  return new TableRow({ children: [tc(TOTAL, [p(label, { bold: true, color: WHITE, size: 16 })], { span: 2 + WEEKS.length, fill: INK })] });
 }
 function taskRow(ws, owner, activeWeeks = [], milestoneWeek = null, opts = {}) {
   const active = activeWeeks.map(w => WIDX[w]).filter(i => i !== undefined);
@@ -128,9 +129,9 @@ const footer = new Footer({ children: [new Paragraph({
   tabStops: [{ type: TabStopType.RIGHT, position: 13958 }],
   border: { top: { style: BorderStyle.SINGLE, size: 4, color: CRIMSON, space: 6 } },
   children: [
-    new TextRun({ text: "novagentica", bold: true, color: CRIMSON, size: 18 }),
-    new TextRun({ text: `    ${CLIENT} · Delivery Timeline · Confidential`, color: DARK, size: 14 }),
-    new TextRun({ text: "\tPage ", size: 16, color: DARK }), new TextRun({ children: [PageNumber.CURRENT], size: 16, color: DARK }),
+    ...B.wordmarkRuns(INK, CRIMSON).map(w => new TextRun({ text: w.text, bold: true, color: w.color, size: 18 })),
+    new TextRun({ text: `    ${CLIENT} · Delivery Timeline · Confidential`, color: B.MUTED, size: 14 }),
+    new TextRun({ text: "\tPage ", size: 16, color: B.MUTED }), new TextRun({ children: [PageNumber.CURRENT], size: 16, color: B.MUTED }),
   ]
 })]});
 
@@ -158,9 +159,9 @@ live.forEach(m => {
 effortRows.push(effRow(tl.fullSlate || "Full slate", String(totals.fullSlate), money(totals.fullSlate * dayRate), { bold: true, fill: CRIMSON_LIGHT }));
 // only show the alternative-path totals when they actually differ from the full slate
 if (totals.confirmedOnly !== totals.fullSlate)
-  effortRows.push(effRow(tl.confirmedOnly || "Confirmed-only", String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: "F7F7F5" }));
+  effortRows.push(effRow(tl.confirmedOnly || "Confirmed-only", String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: B.PAPER_2 }));
 if (backups.length > 0)
-  effortRows.push(effRow(tl.backupPath || "Backup path", String(totals.backupPath), money(totals.backupPath * dayRate), { fill: "F7F7F5" }));
+  effortRows.push(effRow(tl.backupPath || "Backup path", String(totals.backupPath), money(totals.backupPath * dayRate), { fill: B.PAPER_2 }));
 const effortTable = new Table({ width: { size: 10400, type: WidthType.DXA }, columnWidths: [6400, 1600, 2400], rows: effortRows });
 
 // ---- derived: title strap + key-milestones bullet ----
@@ -178,12 +179,13 @@ const effortNote = (G.effortNote || "").replace("{dayRate}", dayRateStr);
 
 const none = { style: BorderStyle.NONE };
 const doc = new Document({
+  background: { color: B.BG },
   styles: { default: { document: { run: { font: BODY, size: 20, color: INK } } } },
   sections: [{
     properties: { page: { size: { width: 11906, height: 16838, orientation: PageOrientation.LANDSCAPE }, margin: { top: 1080, right: 1440, bottom: 1080, left: 1440 } } },
     footers: { default: footer },
     children: [
-      new Paragraph({ spacing: { after: 0 }, children: [new TextRun({ text: "novagentica", bold: true, color: CRIMSON, size: 24 })] }),
+      new Paragraph({ spacing: { after: 0 }, children: B.wordmarkRuns(INK, CRIMSON).map(w => new TextRun({ text: w.text, bold: true, color: w.color, size: 24 })) }),
       new Paragraph({ spacing: { before: 60, after: 20 }, children: [new TextRun({ text: G.title || "Delivery Timeline", bold: true, size: 36, color: INK })] }),
       new Paragraph({ spacing: { after: 160 }, children: [new TextRun({ text: strap, italics: true, font: SERIF, size: 22, color: DARK })] }),
       gantt,

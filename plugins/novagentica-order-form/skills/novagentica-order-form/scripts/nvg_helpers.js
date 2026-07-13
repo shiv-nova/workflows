@@ -3,9 +3,15 @@ const {
   Header, Footer, AlignmentType, TabStopType, BorderStyle, WidthType, ShadingType, VerticalAlign, PageNumber
 } = require("docx");
 
+// Brand tokens — kept in SYNC with the ONE source: lib/brand.js
+// (canonical: Novagentica Design System — styles.css + tokens/). Do not
+// diverge these values; if the design system changes, update lib/brand.js
+// first, then mirror the brand-facing tokens here. This skill inlines them
+// (rather than importing lib/brand.js) so it stays self-contained when the
+// order-form skill is installed on its own, without the engagement-pack lib/.
 const T = {
-  CRIMSON: "CC0D2C", CREAM: "FAFBF6", CREAM2: "F1F0E6", INK: "1A1A1A",
-  GREY: "8C8C8C", HAIR: "D8D8D2", NOTECLR: "8A6D00", SANS: "Inter", SERIF: "Georgia",
+  CRIMSON: "CC0D2C", CREAM: "FAFBF6", CREAM2: "F2F2EC", INK: "0E0E0C",
+  GREY: "8A8A86", HAIR: "D9D9D2", NOTECLR: "9A6B12", SANS: "Inter", SERIF: "Gelasio",
   CONTENT_W: 9026, HALF: 4513,
 };
 const BOX = "\u2610";

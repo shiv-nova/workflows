@@ -5,7 +5,7 @@ This is the single source of truth for the engagement pack. The brief states **i
 states **money** — every total, scenario and the intro-offer sentence are DERIVED, never
 read from the brief. If a figure can be computed, it is not an input.
 
-Worked example: `assets/engagement.example.json` (Hensoldt). Reconcile + flexibility
+Worked example: `assets/engagement.example.json` (fictional “Acme Industrial” template — customer-named spines never live in the repo). Reconcile + flexibility
 proof: `node _selftest.js`.
 
 ## Non-commercial blocks (unchanged from v1)
@@ -84,9 +84,9 @@ promoMonths > term · single-consultant 1-week stage > 5 days (aggressive).
 ## Commercial model: `ladder` vs `options`
 `reconcile()` auto-detects the model. Provide **one** of:
 
-- **Tier ladder** (Hensoldt) — `commercials.tiers[]` + `commercials.licence{quotedTier, introOffer}`.
+- **Tier-ladder model** — `commercials.tiers[]` + `commercials.licence{quotedTier, introOffer}`.
   Licence slide = tier comparison; services slide = per-MVP breakdown + scenarios.
-- **Commercial options** (Bosch) — `commercials.options[]`. Use when a deal is sold as
+- **Options model** — `commercials.options[]`. Use when a deal is sold as
   alternative whole commitments rather than a tier ladder. The licence slide becomes an
   **options comparison** with the rows that actually differ, and the services slide shows the
   recommended option's delivery summary (days, co-investment, blended customer-pays) —

@@ -1,12 +1,12 @@
 {
   "client": {
-    "name": "Hensoldt",
-    "legalEntity": "Hensoldt [legal entity TBC]",
+    "name": "Acme Industrial",
+    "legalEntity": "Acme Industrial [legal entity TBC]",
     "industry": "Defence electronics",
-    "sponsor": "Andre [TBC] — sponsor",
-    "mainContact": "Alex R",
+    "sponsor": "Sam [TBC] — sponsor",
+    "mainContact": "Jamie R",
     "domainLeads": [
-      "Martin [TBC] — SAP transformation lead",
+      "Chris [TBC] — SAP transformation lead",
       "HR + Legal",
       "Engineering / ECCB"
     ],
@@ -20,16 +20,16 @@
   "nova": {
     "deliveryLead": "Shiv Tailor",
     "commercialLead": "Felix Bühner",
-    "founder": "Martin"
+    "founder": "Chris"
   },
   "sources": {
-    "transcript": "Hensoldt_Novagentica Update - 2026_06_02.docx",
-    "fitDeck": "Novagentica-UseCaseFit-Hensoldt-260526_v3.8.pdf"
+    "transcript": "Acme Industrial_Novagentica Update - 2026_06_02.docx",
+    "fitDeck": "Novagentica-UseCaseFit-Acme Industrial-260526_v3.8.pdf"
   },
   "commercials": {
     "currency": "CHF",
     "dayRate": 2500,
-    "//services": "ARRAY of service lines. Hensoldt is one fixed-from-stages line; add retainer / call-off / managed-runtime / free-partnership lines here for other deals.",
+    "//services": "ARRAY of service lines. Acme Industrial is one fixed-from-stages line; add retainer / call-off / managed-runtime / free-partnership lines here for other deals.",
     "services": [
       {
         "id": "ps-mvp",
@@ -136,7 +136,7 @@
         "initialMonths": 36,
         "renewal": "auto, 12-month rolling unless 3 months' notice"
       },
-      "domainDefinition": "A Domain tier covers one department within the client (for Hensoldt, one department).",
+      "domainDefinition": "A Domain tier covers one department within the client (for Acme Industrial, one department).",
       "introOffer": {
         "enabled": true,
         "promoTier": "Enterprise",
@@ -206,9 +206,9 @@
     "firstValue": "first half August 2026"
   },
   "output": {
-    "fileStem": "Novagentica-Hensoldt",
+    "fileStem": "Novagentica-Acme Industrial",
     "version": "2.0",
-    "gdriveFolder": "https://drive.google.com/drive/folders/1oxlKLUqalxxHqO39E6Sye5wg3C49hGGv",
+    "gdriveFolder": "https://drive.google.com/drive/folders/[FOLDER-ID]",
     "artefacts": [
       "proposal",
       "gantt",
@@ -220,7 +220,7 @@
     "formats": "DOCX + PPTX"
   },
   "sow": {
-    "projectName": "Architect — Hensoldt (RFI/RFQ · Candidate Screening · SAP wedge)",
+    "projectName": "Architect — Acme Industrial (RFI/RFQ · Candidate Screening · SAP wedge)",
     "platform": "Novagentica Apollo Agent Exchange",
     "version": "1.2 — DRAFT",
     "date": "June 2026",
@@ -235,7 +235,7 @@
         "b": true
       },
       {
-        "t": " engagement to bring Hensoldt’s agentic AI under enforced authority on the "
+        "t": " engagement to bring Acme Industrial’s agentic AI under enforced authority on the "
       },
       {
         "t": "Novagentica Apollo Agent Exchange",
@@ -249,7 +249,7 @@
         "b": true
       },
       {
-        "t": " (reverse-engineered from Hensoldt’s existing Copilot Studio + LangGraph build), "
+        "t": " (reverse-engineered from Acme Industrial’s existing Copilot Studio + LangGraph build), "
       },
       {
         "t": "candidate screening",
@@ -311,7 +311,7 @@
       "Data cleansing or ETL beyond agreed integration points.",
       "Ongoing managed service beyond Hypercare (unless separately contracted).",
       "Use cases beyond the named MVPs — including the IT-security cloud-evaluation backup, unless substituted for MVP 2 via change control.",
-      "Procurement of third-party licences (SuccessFactors, SAP) — assumed already held by Hensoldt."
+      "Procurement of third-party licences (SuccessFactors, SAP) — assumed already held by Acme Industrial."
     ],
     "deliverables": [
       {
@@ -385,8 +385,8 @@
       }
     ],
     "assumptions": [
-      "Hensoldt provides named technical and business leads with decision authority (Alex R confirmed; procurement, HR/Legal, and SAP/engineering SMEs as required).",
-      "Hensoldt IT provisions platform and read access (Copilot/LangGraph, SuccessFactors, SAP MM/PLM) within 5 business days of contract signature.",
+      "Acme Industrial provides named technical and business leads with decision authority (Jamie R confirmed; procurement, HR/Legal, and SAP/engineering SMEs as required).",
+      "Acme Industrial IT provisions platform and read access (Copilot/LangGraph, SuccessFactors, SAP MM/PLM) within 5 business days of contract signature.",
       "SMEs are available for Discovery workshops during the relevant MVP window.",
       "Named third-party systems (SuccessFactors, SAP) have accessible, documented APIs.",
       "A single Novagentica delivery consultant is assigned; effort is bounded by one person at a maximum of 5 days/week. Any client-side delay extends the timeline by an equivalent period."
@@ -395,7 +395,7 @@
       "Betriebsrat approval is required before any MVP moves to production beyond PoC. Target 27 July 2026. If not resolved, production go-lives slip; build proceeds ahead of the gate under the signed contract.",
       "MVP 2 is conditional on works-council approval and the sponsor accepting a high-risk first case. If declined, the IT-security cloud-evaluation backup (≈ 5 days) substitutes, re-scoped via change control.",
       "MVP 3 wedge (A or B) requires the SAP transformation lead confirmed; his session has slipped two weeks. The framework is identical for A or B, so this is not on the critical path provided confirmation lands by W4.",
-      "Route 1 PoC requires the returned IT-security cloud-evaluation sheet (minutes to complete; Alex to provide the template)."
+      "Route 1 PoC requires the returned IT-security cloud-evaluation sheet (minutes to complete; Jamie to provide the template)."
     ],
     "govRows": [
       {
@@ -406,17 +406,17 @@
       {
         "role": "Client Project Lead",
         "resp": "Client decisions, UAT coordination",
-        "name": "Alex R"
+        "name": "Jamie R"
       },
       {
         "role": "Executive Sponsor (Client)",
         "resp": "SoW sign-off, commercial decisions",
-        "name": "Andre [TBC]"
+        "name": "Sam [TBC]"
       },
       {
         "role": "SAP Transformation Lead (Client)",
         "resp": "MVP 3 wedge confirmation, SAP access",
-        "name": "Martin [TBC]"
+        "name": "Chris [TBC]"
       },
       {
         "role": "Executive Sponsor (Novagentica)",
@@ -427,7 +427,7 @@
     "cadence": "Weekly status (email or short call), Nova Lead to Client Lead; milestone reviews at each MVP go-live and at the 27 July gate; any issue unresolved within 48 hours escalates to the Executive Sponsors.",
     "raciCols": [
       "Nova",
-      "Alex",
+      "Jamie",
       "SME",
       "Sponsor"
     ],
@@ -505,7 +505,7 @@
         ]
       }
     ],
-    "raciNote": "“SME” = the relevant domain expert per MVP (Procurement for MVP 1/3-A; HR + Legal for MVP 2; Engineering / SAP for MVP 3-B). “Sponsor” = Andre.",
+    "raciNote": "“SME” = the relevant domain expert per MVP (Procurement for MVP 1/3-A; HR + Legal for MVP 2; Engineering / SAP for MVP 3-B). “Sponsor” = Sam.",
     "changeControl": "Any change to scope, timeline, or commercials requires a written Change Request signed by both parties. Changes are not in effect until signed. Novagentica will provide an impact assessment within 3 business days of a change request being raised. Because all MVPs share the same enforcement framework, swapping a use case (for example, substituting the IT-security backup for MVP 2) is low-friction and handled through this process.",
     "commercialsNote": "Single delivery consultant — days are bounded by one person across the elapsed weeks (max 5 days/week); MVP 1 and MVP 2 are scheduled aggressively at one week each. Foundation, AQVP certification, and engagement management are absorbed within each MVP, not billed separately. Indicative ± ~15%, fixed at sign-off.",
     "commercialsDayLabels": [
@@ -538,11 +538,11 @@
       },
       {
         "item": "Platform licence",
-        "detail": "Separate offer — {tier} tier, {annualPrice} / year, {term} term. A Domain tier covers one department within Hensoldt. [TBC by Novagentica account lead]"
+        "detail": "Separate offer — {tier} tier, {annualPrice} / year, {term} term. A Domain tier covers one department within Acme Industrial. [TBC by Novagentica account lead]"
       },
       {
         "item": "Licence intro offer",
-        "detail": "First 6 months include Enterprise-tier usage at the Domain price; the licence then auto-renews to Enterprise unless Hensoldt gives 4 weeks’ written notice to remain on Domain."
+        "detail": "First 6 months include Enterprise-tier usage at the Domain price; the licence then auto-renews to Enterprise unless Acme Industrial gives 4 weeks’ written notice to remain on Domain."
       },
       {
         "item": "Payment terms",
@@ -559,7 +559,7 @@
     ],
     "commercialsFootnote": "Commercials are not final until confirmed by the Novagentica account lead (Felix). The platform licence is quoted separately from these professional-services days.",
     "signoffEntities": [
-      "Hensoldt [legal entity TBC]",
+      "Acme Industrial [legal entity TBC]",
       "Novagentica AG"
     ],
     "appendixIntro": "The detailed week-level Gantt is provided as a separate document: ",

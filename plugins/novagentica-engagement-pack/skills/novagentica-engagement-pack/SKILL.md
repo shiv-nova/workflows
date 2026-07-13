@@ -1,9 +1,11 @@
 ---
 name: novagentica-engagement-pack
 description: >
-  Use this skill whenever Shiv or a Novagentica sales person needs to turn a customer signal (a call transcript plus a Use-Case-Fit deck) into the full set of client-facing engagement artefacts in one pass: the Solution Proposal (DOCX), the Delivery Timeline / Gantt (DOCX), the Statement of Work (DOCX), and the branded decks (Executive Summary, Solution Proposal deck, Summary deck with Gantt + Licence options). ALWAYS trigger on "engagement pack", "proposal pack", "build the Hensoldt artefacts", "turn this transcript into a proposal", "create the SoW + Gantt + deck", "regenerate the pack", or any request that starts from a transcript + fit deck and ends in the branded commercial artefact suite. The skill enforces ONE commercial source of truth (engagement.json) so currency, day counts, tier names, prices, and dates stay consistent across every artefact. It defers rendering mechanics to novagentica-presentation (PPTX) and docx (DOCX) and product facts to novagentica-architect-control-authority.
+  Use this skill whenever Shiv or a Novagentica sales person needs to turn a customer signal (a call transcript plus a Use-Case-Fit deck) into the full set of client-facing engagement artefacts in one pass: the Solution Proposal (DOCX), the Delivery Timeline / Gantt (DOCX), the Statement of Work (DOCX), and the branded decks (Executive Summary, Solution Proposal deck, Summary deck with Gantt + Licence options). ALWAYS trigger on "engagement pack", "proposal pack", "build the [client] artefacts", "turn this transcript into a proposal", "create the SoW + Gantt + deck", "regenerate the pack", or any request that starts from a transcript + fit deck and ends in the branded commercial artefact suite. The skill enforces ONE commercial source of truth (engagement.json) so currency, day counts, tier names, prices, and dates stay consistent across every artefact. It defers rendering mechanics to novagentica-presentation (PPTX) and docx (DOCX) and product facts to novagentica-architect-control-authority.
 license: Proprietary — Novagentica AG, 2026
 ---
+
+> **Output surface (decision 2026-07-04): Google only.** Finished artefacts are produced as **Google Docs / Google Slides** — the `*_gdocs` / `*_gslides` generators emit `batchUpdate` payloads that n8n/genservice executes. The `.docx`/`.pptx` generators are retired to executable-spec / rollback status (see the Design System `integrations/google/MIGRATION.md`); artefacts without a payload generator yet are produced by duplicating the branded Google masters.
 
 # Novagentica Engagement Pack
 
@@ -41,7 +43,7 @@ Two rules apply on every run, without being asked:
 1. **Always up-version the presentation (and the pack).** File names carry `v<MAJOR>.<MINOR>` (e.g. `v1.0`). Before generating, find the highest existing version in the customer's Google Drive folder (or `output.version`) and **increment the minor** (`v1.1`, `v1.2`, …); bump the **major** only on a material re-scope. **Never overwrite an existing version** — each delivery is a new file. The decks in particular are always up-versioned so the customer can see which is latest. Write the new version back to `engagement.json` (`output.version`).
 2. **Always point to the customer's Google Drive folder.** Each engagement has a Google Drive folder (`output.gdriveFolder`). On Deliver, upload the finals there via the Google Drive connector (or, if it isn't connected, save locally and surface the folder link). New customer with no folder yet → create one named `Novagentica – <Client>` and record its URL in `output.gdriveFolder`. The folder is the single place the customer picks up artefacts.
 
-File naming: `Novagentica-[ClientName]-[ArtefactType]-v[MAJOR.MINOR].[ext]` — e.g. `Novagentica-Hensoldt-Summary-v1.1.pptx`.
+File naming: `Novagentica-[ClientName]-[ArtefactType]-v[MAJOR.MINOR].[ext]` — e.g. `Novagentica-[Client]-Summary-v1.1.pptx`.
 
 ## Artefacts produced
 
@@ -56,11 +58,11 @@ File naming: `Novagentica-[ClientName]-[ArtefactType]-v[MAJOR.MINOR].[ext]` — 
 
 **Generator status — know which mode each is in:**
 - `build_gantt.js` and `build_sow.js` are **fully parameter-driven**: they read the spine (`engagement.json` → `gantt` frame + per-MVP `delivery` blocks + `sow` block + `commercials`) and contain **no client, date, name, tier or price literals**. A new deal is a new spine, never a generator edit. They derive everything derivable (stage fees, status-filtered totals, milestone columns, cover people, footer) per `references/data-model.md`. Run: `node build_gantt.js engagement.json out.docx` / `node build_sow.js engagement.json out.docx`.
-- The three decks (`build_execsummary`, `build_proposaldeck`, `build_summary6`) are **fully parameter-driven**: slide text lives in the spine under `decks` (shared fields — `planTiles`, the ask, `preparedFor` — plus a per-deck sub-block), and numbers, the licence ladder table and cost rows derive from `commercials`. Each was proven byte-identical to its prior Hensoldt output before being relied on.
-- `build_proposal` is **fully parameter-driven**: identity and all nine sections of narrative live in the spine under `proposalDoc` (cover identity + ordered run-spec sections), and the commercial cost table, the CLIENT identity and the footer derive from `client` / `commercials` / `mvps`. Proven byte-identical (document.xml) to its prior Hensoldt output before being relied on. A new customer is a new `proposalDoc` block — never a generator edit. (Licence figures quoted *inside narrative prose* are authored per-deal; the cost table derives.)
+- The three decks (`build_execsummary`, `build_proposaldeck`, `build_summary6`) are **fully parameter-driven**: slide text lives in the spine under `decks` (shared fields — `planTiles`, the ask, `preparedFor` — plus a per-deck sub-block), and numbers, the licence ladder table and cost rows derive from `commercials`. Each was proven byte-identical to its prior reference-engagement output before being relied on.
+- `build_proposal` is **fully parameter-driven**: identity and all nine sections of narrative live in the spine under `proposalDoc` (cover identity + ordered run-spec sections), and the commercial cost table, the CLIENT identity and the footer derive from `client` / `commercials` / `mvps`. Proven byte-identical (document.xml) to its prior reference-engagement output before being relied on. A new customer is a new `proposalDoc` block — never a generator edit. (Licence figures quoted *inside narrative prose* are authored per-deal; the cost table derives.)
 - The shared `decks` block means the pack's common narrative (plan flow, the ask) is authored **once** and read by every deck.
 - **All six generators are pure renderers** — a new deal is a new `engagement.json` (with `decks` + `proposalDoc` blocks), never a generator edit.
-- When you migrate a generator, prove it the same way `build_gantt.js` was proven: render the current Hensoldt output as a baseline, refactor to read the spine, and diff the rendered text to confirm it is identical before relying on it.
+- When you migrate a generator, prove it the same way `build_gantt.js` was proven: render the current output for the reference engagement (assets/engagement.example.json) as a baseline, refactor to read the spine, and diff the rendered text to confirm it is identical before relying on it.
 
 ## The single source of truth
 
@@ -73,11 +75,11 @@ File naming: `Novagentica-[ClientName]-[ArtefactType]-v[MAJOR.MINOR].[ext]` — 
 - dates: kickoff anchor, works-council/gate date, meeting dates, target first value
 - output: file stem, current **version** (always up-versioned per run), and the **customer Google Drive folder** the finals are delivered to
 
-Full schema and the Hensoldt worked example: `references/inputs.md`, `references/data-model.md` (the shared spine + derivation rules + per-MVP `delivery` block), and `assets/engagement.example.json`.
+Full schema and the worked example: `references/inputs.md`, `references/data-model.md` (the shared spine + derivation rules + per-MVP `delivery` block), and `assets/engagement.example.json`.
 
 ## Brand (fixed — never an input)
 
-Cream `#FAFBF6` background, crimson `#CC0D2C` accent, ink `#0E0E0C`, muted `#8A8A86`, hairline `#D9D9D2`. Inter for structure/labels, Georgia for prose/emphasis. `novagentica` wordmark bottom-left on every slide ("nova" ink + "gentica" crimson). DOCX: crimson H1, table header rows crimson/white, wordmark footer. See `assets/brand.md`. These come from `novagentica-presentation`; do not invent a new look.
+Cream `#FAFBF6` background, crimson `#CC0D2C` accent, ink `#0E0E0C`, muted `#8A8A86`, hairline `#D9D9D2`. Inter for structure/labels, Gelasio for prose/emphasis. `novagentica` wordmark bottom-left on every slide ("nova" ink + "gentica" crimson). DOCX: crimson H1, table header rows crimson/white, wordmark footer. See `assets/brand.md`. These come from `novagentica-presentation`; do not invent a new look.
 
 ## QA checklist (before delivering)
 

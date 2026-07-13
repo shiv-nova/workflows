@@ -2,7 +2,7 @@
   "name": "novagentica-use-case-library",
   "displayName": "Novagentica Use-Case Library",
   "description": "Build and extend the by-vertical use-case library — reusable 3-slide tiles for portfolio / investor framing.",
-  "version": "1.1.1",
+  "version": "1.1.5",
   "author": {
     "name": "Novagentica AG"
   },

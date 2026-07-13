@@ -156,7 +156,7 @@ This skill produces some artifacts itself and hands the rest to sibling skills:
 
 **Handoff sequence:** this skill → `novagentica-delivery` (Stage 5) → `novagentica-order-form` (Stage 4 commercial) → `novagentica-presentation` (if deck needed).
 
-For branded PDFs and the brand tokens (cream `#FAFBF6`, crimson `#CC0D2C`, Inter + Georgia, novagentica wordmark), follow the same approach the contracts/presentation skills use — don't invent a new look.
+For branded PDFs and the brand tokens (cream `#FAFBF6`, crimson `#CC0D2C`, Inter+Gelasio, novagentica wordmark), follow the same approach the contracts/presentation skills use — don't invent a new look.
 
 ---
 

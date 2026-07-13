@@ -5,6 +5,8 @@ description: >
 license: Proprietary — Novagentica AG, 2026
 ---
 
+> **Output surface (decision 2026-07-04): Google only.** Order forms are produced as **Google Docs**: duplicate the order-form master (`BuildBrandedDoc.gs → buildOrderForm`) and populate. The local DOCX scripts are retired to executable-spec / rollback status; if procurement requires a file, `File → Download → DOCX/PDF` from the Google original.
+
 # Novagentica Order Forms (Subscription + Professional Services)
 
 Produces the two signable, brand-correct **Order Forms** that sit under the Novagentica MSA. They are deliberately **separate documents** — different buyers, billing rhythms and approval paths:
@@ -51,10 +53,13 @@ The agreed commercial constants are set in the generator scripts, **in one place
 
 ## Brand & structure (in `nvg_helpers.js`)
 
-Cream `#FAFBF6`, crimson `#CC0D2C` accent, ink `#1A1A1A`, Inter (sans) + Georgia (serif), lowercase `novagentica` wordmark masthead, crimson section rules, A4 portrait, "Confidential" header, MSA/Swiss-law footer with page numbers. Keep master legal terms (liability, IP, warranties, confidentiality, data protection) **in the MSA/DPA** — the order forms point to them, they do not restate them.
+Cream `#FAFBF6`, crimson `#CC0D2C` accent, ink `#0E0E0C`, Inter (sans) + Gelasio (serif), lowercase `novagentica` wordmark masthead, crimson section rules, A4 portrait, "Confidential" header, MSA/Swiss-law footer with page numbers. Keep master legal terms (liability, IP, warranties, confidentiality, data protection) **in the MSA/DPA** — the order forms point to them, they do not restate them.
+
+> Brand tokens track `lib/brand.js` / the Novagentica Design System (`guidelines/brand.md`);
+> `nvg_helpers.js` inlines them so this skill is self-contained. Do not diverge the values.
 
 ## Guardrails baked in (do not silently undo)
 
 - **No Salesforce OEM/ISV block.** Salesforce Agentforce is a runtime Novagentica *enforces over* — explicitly "not resold; no OEM/ISV relationship". Never reintroduce the Xotigo Salesforce Platform Provisions.
 - **Real over-consumption clause** (not the legacy "xyz" placeholder): committed volume, overage rate, no-interruption, sustained over-use → tier conversation, minimum commitment.
-- **Marketing & reference rights default ON** in the Subscription form (7 clauses). Defence/regulated customers (e.g. Hensoldt) routinely refuse logo use and press commitments — strike or negotiate before issue rather than deleting the default silently. Procurement-only signatories often can't bind the press/G2/reference commitments — expect routing through Customer Communications.
+- **Marketing & reference rights default ON** in the Subscription form (7 clauses). Defence/regulated customers routinely refuse logo use and press commitments — strike or negotiate before issue rather than deleting the default silently. Procurement-only signatories often can't bind the press/G2/reference commitments — expect routing through Customer Communications.

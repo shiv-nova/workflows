@@ -79,12 +79,34 @@ async function generate(res, { scriptRel, briefRequired, body, ext, contentType 
 const PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
+// Native Google-Slides variant: the generator emits a batchUpdate payload (JSON), not a file.
+// The service returns { title, slideCount, requests }; n8n runs presentations.create then
+// presentations.batchUpdate against Google with its own credentials (this stays auth-free).
+async function generateJsonPayload(res, { scriptRel, body }) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "nvg-"));
+  try {
+    if (!body || !body.brief) return res.status(400).json({ error: "brief required in body.brief" });
+    const bp = path.join(tmp, "brief.json");
+    const op = path.join(tmp, "payload.json");
+    fs.writeFileSync(bp, JSON.stringify(body.brief));
+    await runGenerator(scriptRel, [bp, op], tmp);
+    if (!fs.existsSync(op)) return res.status(422).json({ error: "no payload produced — preflight refusal or generator gap" });
+    return res.type("application/json").send(fs.readFileSync(op, "utf8"));
+  } catch (e) {
+    return res.status(500).json({ error: String(e.message || e).slice(0, 4000) });
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 app.get("/health", (_req, res) =>
   res.json({
     ok: true,
     service: "nvg-genservice",
     canonical: ["summary", "timeline", "sow", "orderform/subscription", "orderform/ps"],
-    pending: ["proposal", "addendum", "gantt", "execsummary", "proposaldeck"],
+    gslides: ["execsummary", "timeline", "proposaldeck", "summary"],
+    gdocs: ["proposal"],
+    pending: ["sow", "gantt", "orderform/subscription", "orderform/ps", "addendum"],
   })
 );
 
@@ -105,8 +127,24 @@ app.post("/generate/sow", auth, (req, res) =>
   generate(res, { scriptRel: "generators/build_sow.js", briefRequired: true, body: req.body, ext: ".docx", contentType: DOCX })
 );
 
+// native Google Slides (returns batchUpdate JSON; n8n executes it against Google)
+const GSLIDES = { execsummary: "build_execsummary_gslides.js", timeline: "build_timeline_gslides.js", proposaldeck: "build_proposaldeck_gslides.js", summary: "build_summary6_gslides.js" };
+for (const [name, script] of Object.entries(GSLIDES)) {
+  app.post(`/generate/gslides/${name}`, auth, (req, res) =>
+    generateJsonPayload(res, { scriptRel: `generators/${script}`, body: req.body })
+  );
+}
+
+// native Google Docs (returns documents.batchUpdate JSON; n8n executes it against Google)
+const GDOCS = { proposal: "build_proposal_gdocs.js" };
+for (const [name, script] of Object.entries(GDOCS)) {
+  app.post(`/generate/gdocs/${name}`, auth, (req, res) =>
+    generateJsonPayload(res, { scriptRel: `generators/${script}`, body: req.body })
+  );
+}
+
 // pending Step-2 generator conversions (build_sow / build_proposal onto lib+reconcile):
-// app.post("/generate/sow", ...)  app.post("/generate/proposal", ...)  app.post("/generate/addendum", ...)
+// app.post("/generate/proposal", ...)  app.post("/generate/addendum", ...)
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`nvg-genservice listening on :${PORT}`));

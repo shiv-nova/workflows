@@ -80,9 +80,9 @@ For bulk engagements use a week-level Gantt (not day-level). Columns:
 
 | Phase / Activity | Owner | W1 | W2 | W3 | W4 | W5 | W6 | ... |
 
-- Use dark section header rows (fill `#2B2B2B`, white text) to separate: Integration Setup, Wave 1, Wave 2, etc.
+- Use ink section header rows (fill `#0E0E0C`, white text) to separate: Integration Setup, Wave 1, Wave 2, etc.
 - Shade active week cells using crimson at 20% opacity (`#F5C6CE`)
-- Milestone rows (wave sign-off, final acceptance) use mid-crimson fill (`#E8828F`) with white text
+- Milestone rows (wave sign-off, final acceptance) use crimson fill (`#CC0D2C`) with white text
 - Document orientation: **landscape** for 6+ week engagements
 
 ### Non-viable agent contingency — always include

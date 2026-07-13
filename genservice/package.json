@@ -4,7 +4,11 @@
   "private": true,
   "description": "HTTP wrapper over canonical Novagentica document generators (one source of truth for n8n).",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
+  "scripts": {
+    "sync": "node sync.js",
+    "prestart": "node sync.js",
+    "start": "node server.js"
+  },
   "dependencies": {
     "express": "^4.19.2",
     "pptxgenjs": "^3.12.0",

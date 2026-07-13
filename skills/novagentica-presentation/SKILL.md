@@ -1,12 +1,16 @@
 ---
 name: novagentica-presentation
-description: Use this skill any time Martin (founder of Novagentica) asks for a presentation, deck, slides, keynote, or .pptx — for client meetings, investor pitches, conference keynotes, internal updates, or anything Novagentica-branded. ALWAYS use this skill when the user mentions "deck", "slides", "presentation", "keynote", "pitch", or refers to the Novagentica style/template, even if they don't say "Novagentica" explicitly. The skill produces .pptx files in the canonical Novagentica visual identity (cream background, deep crimson accent, serif/sans typographic mix, novagentica wordmark on every slide) modeled on the CIOMove keynote template.
+description: Use this skill any time Martin (founder of Novagentica) asks for a presentation, deck, slides, keynote, or .pptx — for client meetings, investor pitches, conference keynotes, internal updates, or anything Novagentica-branded. ALWAYS use this skill when the user mentions "deck", "slides", "presentation", "keynote", "pitch", or refers to the Novagentica style/template, even if they don't say "Novagentica" explicitly. The skill produces .pptx files in the canonical Novagentica visual identity (cream background, deep crimson accent, serif/sans typographic mix, novagentica wordmark on every slide) modeled on the canonical Novagentica keynote template.
 license: Proprietary — Novagentica AG, 2026
 ---
 
+> **Brand.** Before generating anything, read `assets/brand.md`. The Novagentica look is fixed — crimson `#CC0D2C`, ink `#0E0E0C`, paper `#FAFBF6`, Inter (structure) + Gelasio (prose serif), two-tone `nova`(ink)+`gentica`(crimson) wordmark. Never invent a new look.
+
+> **Output surface (decision 2026-07-04): Google only.** Decks are produced as **Google Slides**: duplicate the "Novagentica — Master Deck" (built once via the Design System's `BuildBrandedDeck.gs → buildMasterDeck`) and populate it; retrofit third-party decks with `BrandSlides.gs → brandThisDeck`. `.pptx` output is the rollback path only (procurement portals that reject Google exports: `File → Download → PPTX`).
+
 # Novagentica Presentation Skill
 
-Build presentations in the canonical Novagentica visual identity. The reference is the CIOMove 2026 keynote template — restrained, editorial, executive. Every slide uses the cream/white background with the **novagentica wordmark in the bottom-left footer**. This skill covers everything from a single-slide insight card to a full keynote deck.
+Build presentations in the canonical Novagentica visual identity. The reference is the canonical Novagentica keynote template — restrained, editorial, executive. Every slide uses the cream/white background with the **novagentica wordmark in the bottom-left footer**. This skill covers everything from a single-slide insight card to a full keynote deck.
 
 ## When to use this skill
 
@@ -32,17 +36,17 @@ These are non-negotiable. Use them exactly.
 | Element | Font | Weight | Size |
 |---|---|---|---|
 | Headline (the big sentence) | Inter (sans, fallback Arial Black) | 800 | 44–72pt |
-| Headline italic accent | Inter Italic / Georgia Italic | 800/Bold Italic | matches headline |
-| Subhead (often crimson italic) | Georgia Italic / Inter Italic | Bold Italic | 22–32pt |
+| Headline italic accent | Inter Italic / Gelasio Italic | 800/Bold Italic | matches headline |
+| Subhead (often crimson italic) | Gelasio Italic / Inter Italic | Bold Italic | 22–32pt |
 | Eyebrow label (e.g. "OUTLINE", "NEW REALITY") | Inter | Bold, ALL CAPS, 1.5px tracking | 11–12pt |
-| Body / row text | Georgia (serif) | Regular | 14–20pt |
+| Body / row text | Gelasio (serif) | Regular | 14–20pt |
 | Row label (e.g. "TARIFF", "DEMAND") | Inter | Bold, ALL CAPS | 11–13pt |
-| Italic emphasis lines | Georgia Italic | Bold Italic | matches body |
+| Italic emphasis lines | Gelasio Italic | Bold Italic | matches body |
 | Footer wordmark "novagentica" | Inter | Bold (Black) | 14pt — "nova" in INK, "gentica" in ACCENT |
 | Footer page number | Inter | Regular | 9–10pt |
-| Section roman numeral (header) | Georgia Italic | Bold Italic | 14pt, crimson |
+| Section roman numeral (header) | Gelasio Italic | Bold Italic | 14pt, crimson |
 
-> **The "feel"**: editorial print magazine meets Swiss design. Lots of whitespace. Hairline rules. Two type families doing two jobs (Inter for structure/labels, Georgia for prose/emphasis). Crimson appears sparingly and deliberately — never as a fill block other than the small logo mark, the wordmark's crimson half, and the vertical divider in two-column layouts.
+> **The "feel"**: editorial print magazine meets Swiss design. Lots of whitespace. Hairline rules. Two type families doing two jobs (Inter for structure/labels, Gelasio for prose/emphasis). Crimson appears sparingly and deliberately — never as a fill block other than the small logo mark, the wordmark's crimson half, and the vertical divider in two-column layouts.
 
 ---
 
@@ -52,7 +56,7 @@ Every slide follows this skeleton (slide is 13.333" × 7.5" widescreen):
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│  [logo mark or roman]              MARTIN HOFMANN · THE   │ ← header band, ~0.55" tall
+│  [logo mark or roman]              [PRESENTER · TITLE]    │ ← header band, ~0.55" tall
 │  ────                              AGENTIC ENTERPRISE ·   │   crimson short underline
 │                                    [EVENT NAME]            │
 │  ────────────────────────────────────────────────────────  │ ← top hairline rule
@@ -60,7 +64,7 @@ Every slide follows this skeleton (slide is 13.333" × 7.5" widescreen):
 │  EYEBROW LABEL                                             │ ← 12pt bold caps muted
 │                                                            │
 │  Big headline sentence.                                    │ ← 44–72pt Inter Black
-│  Italic crimson subhead.                                   │ ← 22–28pt Georgia Italic
+│  Italic crimson subhead.                                   │ ← 22–28pt Gelasio Italic
 │                                                            │
 │  ────────────────────────────────────────────────────────  │ ← mid hairline rule
 │                                                            │
@@ -90,14 +94,14 @@ Use these as your menu. Pick the one that fits the content; don't invent new lay
 
 | # | Name | When to use | Reference |
 |---|------|-------------|-----------|
-| 1 | **Outline / TOC** | Opening slide listing the deck's chapters with roman numerals | CIOMove slide 1 |
-| 2 | **Themed rows** | A few labeled rows (TARIFF / DEMAND / REGULATORY style), each with a fact and a bold action italic | CIOMove slide 2 |
-| 3 | **Two-column contrast** | Old vs new, before vs after, problem vs solution, with a vertical crimson divider bar | CIOMove slides 3, 4 |
-| 4 | **Numbered stack** | 01 / 02 / 03 numbered rows with a label, sometimes one row highlighted in crimson | CIOMove slide 5 |
-| 5 | **Hero word + caption** | One enormous italic word (e.g. "Sovereignty.") with framed callout below | CIOMove slide 6 |
-| 6 | **Pull quote** | Big quote with crimson opening curly mark, attribution beneath a short rule | CIOMove slide 7 |
+| 1 | **Outline / TOC** | Opening slide listing the deck's chapters with roman numerals | Reference deck slide 1 |
+| 2 | **Themed rows** | A few labeled rows (TARIFF / DEMAND / REGULATORY style), each with a fact and a bold action italic | Reference deck slide 2 |
+| 3 | **Two-column contrast** | Old vs new, before vs after, problem vs solution, with a vertical crimson divider bar | Reference deck slides 3, 4 |
+| 4 | **Numbered stack** | 01 / 02 / 03 numbered rows with a label, sometimes one row highlighted in crimson | Reference deck slide 5 |
+| 5 | **Hero word + caption** | One enormous italic word (e.g. "Sovereignty.") with framed callout below | Reference deck slide 6 |
+| 6 | **Pull quote** | Big quote with crimson opening curly mark, attribution beneath a short rule | Reference deck slide 7 |
 | 7 | **Architecture flow** | Horizontal numbered tile grid for governance loops, system maps, process visuals (cream background, crimson number tiles, hairline tile borders) | replaces former dark variant |
-| 8 | **Closing CTA** | Book/QR/contact card with a two-column image-left, content-right layout | CIOMove slide 8 |
+| 8 | **Closing CTA** | Book/QR/contact card with a two-column image-left, content-right layout | Reference deck slide 8 |
 
 Detailed code patterns for each layout live in `references/layouts.md`. **Read that file before generating slides.**
 
@@ -105,7 +109,7 @@ Detailed code patterns for each layout live in `references/layouts.md`. **Read t
 
 ## Tone of voice (for headlines and copy)
 
-The CIOMove deck is the gold standard. Notice the cadence:
+The reference keynote deck is the gold standard. Notice the cadence:
 
 - **Short, declarative, terminal punctuation.** "Every day, a new exception." "Sovereignty." "The Trust Stack."
 - **Italic crimson subheads contradict or sharpen the headline.** "Not the exception — the operating condition."
@@ -122,14 +126,14 @@ When Martin gives you content as bullet points, **rewrite into this voice**. Don
 1. **Read `references/layouts.md`** for the exact pptxgenjs code for each layout.
 2. **Confirm the deck spec with Martin first** if anything is ambiguous — number of slides, the headline/subhead per slide, whether to include the standard footer meta band (Martin does NOT want this auto-included; ask), and the event name to put in the header.
 3. **Use `pptxgenjs`** (Node) to build the .pptx. Emit a single `build.js` file in `/home/claude` and run it. The `pptx` skill's `pptxgenjs.md` reference covers the API basics if you need them; this skill assumes you've used pptxgenjs before.
-4. **Save the output to `/mnt/user-data/outputs/`** with a descriptive name like `Hofmann-[Topic]-Keynote.pptx`.
+4. **Save the output to `/mnt/user-data/outputs/`** with a descriptive name like `[Presenter]-[Topic]-Keynote.pptx`.
 5. **QA visually**: Convert the deck to images using the recipe in the `pptx` skill's QA section. Inspect for overlaps, overflow, alignment. Fix once. Don't loop.
 6. **Present the file** with `present_files`. Keep the chat-side commentary minimal — the file is the deliverable.
 
 ### Footer/header convention
 
 Martin does not want auto-inserted boilerplate in the **header**. **Always ask** at the start of a deck:
-- Should the header band include the standard "MARTIN HOFMANN · THE AGENTIC ENTERPRISE · [EVENT]" line, and if so what's the event name?
+- Should the header band include the standard "[PRESENTER] · [DECK TITLE] · [EVENT]" line, and if so: presenter, title, event?
 - Page numbers on every slide?
 
 If he says yes, apply consistently. If he says no, drop the header meta entirely — just the logo mark and the rules.
@@ -155,7 +159,7 @@ The **wordmark in the bottom-left footer is mandatory on every slide** and is no
 ## Pitfalls and recovery
 
 - **pptxgenjs uses inches, not points, for positioning.** Convert: 1in = 96px @ 96dpi. The slide is 13.333" × 7.5".
-- **Georgia and Inter must be referenced by exact PowerPoint name** (`Georgia`, `Inter`). If Inter isn't available on the target machine, fall back: `Helvetica` → `Arial`. Set both in pptxgenjs as comma-separated.
+- **Gelasio and Inter must be referenced by exact PowerPoint name** (`Gelasio`, `Inter`). If Inter isn't available on the target machine, fall back: `Helvetica` → `Arial`. Set both in pptxgenjs as comma-separated.
 - **Italic crimson subhead is a single text frame**, not two. Use a `text:` array with mixed `options` for bold/italic toggles within one paragraph. Pattern is in `references/layouts.md`.
 - **Roman numerals for sections** (I., II., III., IV., V.) live in the header band's left position, replacing the logo mark on body slides. Slide 1 (outline) and the final slide (CTA) keep the logo mark.
 - **Headline sizing**: pptxgenjs renders Inter Black slightly wider than Keynote does. Use 44pt for long headlines (e.g. "Authority. Boundaries. Evidence."), 48pt for medium (e.g. "Every day, a new exception."), 56pt for short, and 96pt for one-word heroes (e.g. "Sovereignty."). When in doubt, set `fit: "shrink"` on the headline text frame.
@@ -167,7 +171,7 @@ The **wordmark in the bottom-left footer is mandatory on every slide** and is no
 
 - `SKILL.md` — this file
 - `references/layouts.md` — exact pptxgenjs code patterns for each of the 7 layouts (including the architecture flow)
-- `references/voice.md` — extended tone-of-voice guide with more CIOMove examples
+- `references/voice.md` — extended tone-of-voice guide with more worked examples
 - `assets/starter-build.js` — a runnable build script template with the 4 most common layouts pre-wired. **Copy this as the starting point** for a new deck — edit the SLIDES section at the bottom and run with `node`. For layouts not in the starter (two-column, numbered stack, architecture flow, closing CTA), copy the pattern from `references/layouts.md`.
 - `assets/logo-mark.png` — small crimson logo placeholder (the layouts draw the mark with shapes, so this is rarely needed)
 - `assets/novagentica-wordmark.png` — the full wordmark with black background. NOT used by the current build (the wordmark is rendered as text in `drawFooterRule`). Kept on file as a reference asset.

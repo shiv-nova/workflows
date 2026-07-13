@@ -45,13 +45,16 @@ co-invested work. Licence is "blended" only in options mode; in ladder mode it i
 - Salesforce Agentforce belongs in *positioning/capability* runtime lists; do **not** inject it into a
   deal's in-scope runtimes (respect the explicit list).
 - Brand tokens live in `lib/brand.js` only: cream `#FAFBF6`, crimson `#CC0D2C`, ink `#0E0E0C`,
-  Inter + Georgia, lowercase `novagentica` wordmark. Product narrative fixed: NO PASSPORT = NO
+  Inter+Gelasio, lowercase `novagentica` wordmark. Product narrative fixed: NO PASSPORT = NO
   EXECUTION, AQVP, CDAP™, Crypto Passport.
 
 ## 5. Shared libraries (no per-skill copies)
 `lib/brand.js` · `lib/format.js` · `lib/commercials.js` · `lib/timelines.js` · `lib/preflight.js`.
 Skills import these; they do not re-implement money, dates, brand or preflight. The order-form
-(Python) mirrors the **same contract** — same fields, same derivations, same preflight questions.
+skill (`build_of_subscription.js` + `build_of_ps.js`) shares its own `nvg_helpers.js` and
+**inlines** the brand tokens (so it installs standalone), but those values MUST match
+`lib/brand.js` — treat `lib/brand.js` as canonical and mirror any change. It follows the same
+commercial contract (fields, derivations, preflight questions).
 
 ## 6. Output & versioning
 `{Stem}-{Artefact}-v{version}.pptx|docx`. TRIAL/DRAFT artefacts carry the suffix and are never

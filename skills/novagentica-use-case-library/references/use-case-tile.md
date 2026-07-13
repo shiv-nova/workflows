@@ -53,7 +53,7 @@ Each slide carries one job. Resist cramming — the brand allows one headline, o
 | 2 — Agent & Moat | #7 Architecture flow | #3 Two-column contrast (when the use case is a before/after process story) |
 | 3 — Economics | #4 Numbered stack | — |
 
-All other brand constants (cream background, crimson accent only, Inter+Georgia, wordmark bottom-left every slide, hairline rules) are owned by the presentation skill. Do not restate or override them.
+All other brand constants (cream background, crimson accent only, Inter+Gelasio, wordmark bottom-left every slide, hairline rules) are owned by the presentation skill. Do not restate or override them.
 
 ---
 

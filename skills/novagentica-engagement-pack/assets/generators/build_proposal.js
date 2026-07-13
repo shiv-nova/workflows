@@ -29,20 +29,22 @@ const confirmedDays = sumDays(mvps.filter(m => m.status === "confirmed" && !m.is
 const totals = { fullSlate: sumDays(liveMvps), confirmedOnly: confirmedDays, backupPath: confirmedDays + sumDays(backups) };
 const d = i => (mvps[i] && mvps[i].sizing && mvps[i].sizing.consultantDays) || 0;
 
-const CRIMSON = "CC0D2C", CRIMSON_LIGHT = "F5C6CE", INK = "0E0E0C", DARK = "2B2B2B", WHITE = "FFFFFF", GREY = "CCCCCC";
-const BODY = "Inter", SERIF = "Georgia";
+const B = require("./lib/brand");
+const CRIMSON = B.ACCENT, CRIMSON_LIGHT = B.CRIMSON_LIGHT, INK = B.INK, DARK = B.DARK, WHITE = B.WHITE, GREY = B.GREY, MUTED = B.MUTED;
+const BODY = B.SANS, SERIF = B.SERIF;
 const border = { style: BorderStyle.SINGLE, size: 1, color: GREY };
 const borders = { top: border, bottom: border, left: border, right: border };
 const cellMargins = { top: 80, bottom: 80, left: 120, right: 120 };
 
 // ---- run-spec → TextRun ----
-function run(r) {
-  if (typeof r === "string") return new TextRun(r);
+function run(r, font) {
+  if (typeof r === "string") return new TextRun(font ? { text: r, font } : r);
   const o = { text: r.t };
   if (r.b) o.bold = true;
   if (r.c) { o.bold = true; o.color = CRIMSON; }
   if (r.i) { o.italics = true; o.font = SERIF; }
   if (r.dark) o.color = DARK;
+  if (font && !o.font) o.font = font;
   return new TextRun(o);
 }
 function h1(text) { return new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(text)] }); }
@@ -70,10 +72,10 @@ const footer = new Footer({
     tabStops: [{ type: TabStopType.RIGHT, position: 9026 }],
     border: { top: { style: BorderStyle.SINGLE, size: 4, color: CRIMSON, space: 6 } },
     children: [
-      new TextRun({ text: "novagentica", bold: true, color: CRIMSON, size: 18 }),
-      new TextRun({ text: `    ${CLIENT} · ${ID.footerLabel || ""}`, color: DARK, size: 14 }),
-      new TextRun({ text: "\tPage ", size: 16, color: DARK }),
-      new TextRun({ children: [PageNumber.CURRENT], size: 16, color: DARK }),
+      ...B.wordmarkRuns(INK, CRIMSON).map(w => new TextRun({ text: w.text, bold: true, color: w.color, size: 18 })),
+      new TextRun({ text: `    ${CLIENT} · ${ID.footerLabel || ""}`, color: MUTED, size: 14 }),
+      new TextRun({ text: "\tPage ", size: 16, color: MUTED }),
+      new TextRun({ children: [PageNumber.CURRENT], size: 16, color: MUTED }),
     ]
   })]
 });
@@ -99,8 +101,8 @@ const CW = 9026;
 
 // ===== COVER (from identity) =====
 const cover = [
-  new Paragraph({ spacing: { before: 1200, after: 0 }, children: [new TextRun({ text: "novagentica", bold: true, color: CRIMSON, size: 30 })] }),
-  new Paragraph({ spacing: { before: 40, after: 600 }, children: [new TextRun({ text: ID.kicker, color: DARK, size: 18, characterSpacing: 40 })] }),
+  new Paragraph({ spacing: { before: 1200, after: 0 }, children: B.wordmarkRuns(INK, CRIMSON).map(w => new TextRun({ text: w.text, bold: true, color: w.color, size: 30 })) }),
+  new Paragraph({ spacing: { before: 40, after: 600 }, children: [new TextRun({ text: ID.kicker, color: MUTED, size: 18, characterSpacing: 40 })] }),
   new Paragraph({ spacing: { before: 200, after: 0 }, children: [new TextRun({ text: ID.title1, bold: true, size: 56, color: INK })] }),
   new Paragraph({ spacing: { before: 0, after: 240 }, children: [new TextRun({ text: ID.title2, bold: true, size: 56, color: INK })] }),
   new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: ID.subtitle, italics: true, font: SERIF, size: 26, color: DARK })] }),
@@ -121,7 +123,7 @@ function routesTable(item) {
     rows: [
       new TableRow({ tableHeader: true, children: [headerCell(item.headers[0], 1500), headerCell(item.headers[1], 3763), headerCell(item.headers[2], 3763)] }),
       ...item.rows.map(r => new TableRow({ children: [
-        dataCell([cellPara(r.label, { bold: true })], 1500, { fill: "F7F7F5" }),
+        dataCell([cellPara(r.label, { bold: true })], 1500, { fill: B.PAPER_2 }),
         dataCell(r.r1, 3763), dataCell(r.r2, 3763)
       ]}))
     ]});
@@ -149,8 +151,8 @@ function daysTable(item) {
       daysRow(item.mvpRows[1], String(d(1)), money(d(1) * dayRate)),
       daysRow(item.mvpRows[2], String(d(2)), money(d(2) * dayRate)),
       daysRow(item.fullLabel, String(totals.fullSlate), money(totals.fullSlate * dayRate), { bold: true, fill: CRIMSON_LIGHT }),
-      daysRow(item.confirmedLabel, String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: "F7F7F5" }),
-      daysRow(item.backupLabel, String(totals.backupPath), money(totals.backupPath * dayRate), { fill: "F7F7F5" }),
+      daysRow(item.confirmedLabel, String(totals.confirmedOnly), money(totals.confirmedOnly * dayRate), { fill: B.PAPER_2 }),
+      daysRow(item.backupLabel, String(totals.backupPath), money(totals.backupPath * dayRate), { fill: B.PAPER_2 }),
     ]});
 }
 
@@ -164,10 +166,10 @@ function render(item) {
   switch (item.k) {
     case "h1": return [h1(item.t)];
     case "h2": return [h2(item.t)];
-    case "body": return [body(item.runs.map(run), item.before ? { spacing: { before: item.before } } : {})];
-    case "bullet": return [bullet(item.runs.map(run))];
+    case "body": return [body(item.runs.map(r => run(r, SERIF)), item.before ? { spacing: { before: item.before } } : {})];
+    case "bullet": return [bullet(item.runs.map(r => run(r, SERIF)))];
     case "quote": return [quote(item)];
-    case "numbered": return [new Paragraph({ numbering: { reference: "nums", level: 0 }, spacing: { after: 80 }, children: item.runs.map(run) })];
+    case "numbered": return [new Paragraph({ numbering: { reference: "nums", level: 0 }, spacing: { after: 80 }, children: item.runs.map(r => run(r, SERIF)) })];
     case "routesTable": return [routesTable(item)];
     case "risksTable": return [risksTable(item)];
     case "daysTable": return [daysTable(item)];
@@ -177,6 +179,7 @@ function render(item) {
 const sectionChildren = (PD.sections || []).flatMap(render);
 
 const doc = new Document({
+  background: { color: B.BG },
   styles, numbering,
   sections: [{
     properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } },
@@ -185,6 +188,6 @@ const doc = new Document({
   }]
 });
 Packer.toBuffer(doc).then(buffer => {
-  fs.writeFileSync(process.argv[3] || "Novagentica-Hensoldt-SolutionProposal-v1.2.docx", buffer);
+  fs.writeFileSync(process.argv[3] || `${(E.output && E.output.fileStem) || `Novagentica-${CLIENT}`}-SolutionProposal-v${(E.output && E.output.version) || "1.0"}.docx`, buffer);
   console.log("proposal written");
 });

@@ -16,7 +16,7 @@ const { money: fmtMoney } = require("./lib/format");
 const { reconcile } = require("./lib/commercials");
 const { preflight, report } = require("./lib/preflight");
 
-const SPINE_PATH = process.argv[2] || path.join(__dirname, "..", "engagement.example.json");
+const SPINE_PATH = process.argv[2] || "engagement.json"; // explicit spine or cwd engagement.json — never a customer fixture
 const E = require(path.resolve(SPINE_PATH));
 const R = reconcile(E);
 // Prompt, don't fabricate: missing critical inputs stop generation with questions.
@@ -34,7 +34,7 @@ const CLIENT = client.name || "[Client]";
 // Brand
 const CRIMSON = B.ACCENT, CRIMSON_LIGHT = B.CRIMSON_LIGHT, INK = B.INK,
       DARK = B.DARK, WHITE = B.WHITE, GREY = B.GREY, BODY = B.SANS, SERIF = B.SERIF;
-const FILLS = { CRIMSON_LIGHT, F7F7F5: "F7F7F5" };
+const FILLS = { CRIMSON_LIGHT, F7F7F5: B.PAPER_2 /* legacy key, PAPER_2 token */ };
 const border = { style: BorderStyle.SINGLE, size: 1, color: GREY };
 const borders = { top: border, bottom: border, left: border, right: border };
 const cm = { top: 80, bottom: 80, left: 120, right: 120 };
@@ -62,17 +62,18 @@ const firstName = s => String(s || "").split(" — ")[0];
 
 function h1(t) { return new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(t)] }); }
 function h2(t) { return new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun(t)] }); }
+// body prose is Gelasio 11pt (design DOCX convention); tables/labels stay Inter via cp()/hcell.
 function body(runs, opts = {}) {
-  const arr = Array.isArray(runs) ? runs : [new TextRun(runs)];
+  const arr = Array.isArray(runs) ? runs : [new TextRun({ text: runs, font: SERIF })];
   return new Paragraph({ spacing: { after: 140, line: 276 }, ...opts, children: arr });
 }
 function bullet(runs) {
-  const arr = Array.isArray(runs) ? runs : [new TextRun(runs)];
+  const arr = Array.isArray(runs) ? runs : [new TextRun({ text: runs, font: SERIF })];
   return new Paragraph({ numbering: { reference: "b", level: 0 }, spacing: { after: 70, line: 264 }, children: arr });
 }
-function bold(t) { return new TextRun({ text: t, bold: true }); }
-function txt(t) { return new TextRun(t); }
-function runs(spec) { return spec.map(r => new TextRun({ text: r.t, bold: !!r.b })); }
+function bold(t) { return new TextRun({ text: t, bold: true, font: SERIF }); }
+function txt(t) { return new TextRun({ text: t, font: SERIF }); }
+function runs(spec) { return spec.map(r => new TextRun({ text: r.t, bold: !!r.b, font: SERIF })); }
 function cp(text, opts = {}) { return new Paragraph({ alignment: opts.align, children: [new TextRun({ text, size: 19, bold: opts.bold, color: opts.color, italics: opts.italics })] }); }
 function hcell(text, w) { return new TableCell({ borders, width: { size: w, type: WidthType.DXA }, margins: cm, shading: { fill: CRIMSON, type: ShadingType.CLEAR }, children: [new Paragraph({ children: [new TextRun({ text, bold: true, color: WHITE, size: 19 })] })] }); }
 function dcell(content, w, opts = {}) {
@@ -84,9 +85,9 @@ const footer = new Footer({ children: [new Paragraph({
   tabStops: [{ type: TabStopType.RIGHT, position: CW }],
   border: { top: { style: BorderStyle.SINGLE, size: 4, color: CRIMSON, space: 6 } },
   children: [
-    new TextRun({ text: "novagentica", bold: true, color: CRIMSON, size: 18 }),
-    new TextRun({ text: `    ${CLIENT} · Statement of Work ${S.footerVersion || ""} · Confidential`, color: DARK, size: 14 }),
-    new TextRun({ text: "\tPage ", size: 16, color: DARK }), new TextRun({ children: [PageNumber.CURRENT], size: 16, color: DARK }),
+    ...B.wordmarkRuns(INK, CRIMSON).map(w => new TextRun({ text: w.text, bold: true, color: w.color, size: 18 })),
+    new TextRun({ text: `    ${CLIENT} · Statement of Work ${S.footerVersion || ""} · Confidential`, color: B.MUTED, size: 14 }),
+    new TextRun({ text: "\tPage ", size: 16, color: B.MUTED }), new TextRun({ children: [PageNumber.CURRENT], size: 16, color: B.MUTED }),
   ]
 })]});
 
@@ -106,7 +107,7 @@ const numbering = { config: [
 // ---- Cover (people/fields derived) ----
 function kv(k, v) { return new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: k, bold: true }), new TextRun({ text: v })] }); }
 const cover = [
-  new Paragraph({ spacing: { before: 400, after: 0 }, children: [new TextRun({ text: "novagentica", bold: true, color: CRIMSON, size: 30 })] }),
+  new Paragraph({ spacing: { before: 400, after: 0 }, children: B.wordmarkRuns(INK, CRIMSON).map(w => new TextRun({ text: w.text, bold: true, color: w.color, size: 30 })) }),
   new Paragraph({ spacing: { before: 240, after: 0 }, children: [new TextRun({ text: "Statement of Work", bold: true, size: 52, color: INK })] }),
   new Paragraph({ spacing: { before: 40, after: 300 }, children: [new TextRun({ text: "Architect — agentic AI under enforced authority", italics: true, font: SERIF, size: 24, color: DARK })] }),
   new Paragraph({ spacing: { before: 200 }, border: { top: { style: BorderStyle.SINGLE, size: 4, color: CRIMSON, space: 8 }, bottom: { style: BorderStyle.SINGLE, size: 4, color: CRIMSON, space: 8 } }, children: [new TextRun({ text: " ", size: 6 })] }),
@@ -263,7 +264,7 @@ const appendix = [
   ]}),
 ];
 
-const doc = new Document({ styles, numbering, sections: [{
+const doc = new Document({ background: { color: B.BG }, styles, numbering, sections: [{
   properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } },
   footers: { default: footer },
   children: [

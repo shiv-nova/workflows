@@ -108,7 +108,7 @@ stated explicitly — silence is recorded, not assumed.>
 
 - Sections 4 (null option), 7 (falsifiable assumptions), 9 (kill-criteria), and 10 (verbatim
   dissent) are the forcing functions. If any is empty or hand-waved, the memo is not done.
-- Keep prose tight and in Georgia for the rendered DOCX; labels and tables in Inter.
+- Keep prose tight and in Gelasio for the rendered DOCX; labels and tables in Inter.
 - The `.md` copy feeds `/cs:decide` directly — its sections 6, 9, 10, 11 map onto the decision
   record's Success criteria, Kill criteria, Preserved dissent, and Decision fields.
 - If grounding turned up an unknown that the recommendation depends on, that unknown belongs in

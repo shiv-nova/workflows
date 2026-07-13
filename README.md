@@ -1,18 +1,33 @@
-# Novagentica — skills + generator service (single source of truth)
+# Novagentica — skills, plugin marketplace & generator service
 
-This repo is the durable home for everything that previously lived only in the Claude.ai
-skills sandbox or on a local disk. If a version question ever arises, **this repo wins.**
+The durable home for everything that previously lived only in the Claude.ai skills sandbox
+or on a local disk. **If a version question ever arises, this repo wins.**
 
-It is also a **Claude Code plugin marketplace**: every skill in `skills/` is published as an
-installable plugin so anyone can pull just the skills they want. Each plugin ships **both a skill
-and a matching agent**, so it surfaces in skill-based clients and in **Cowork** (which lists
-plugin *agents*).
+It is three things that share one source of truth:
+
+1. **`skills/`** — the canonical Claude.ai skills. Every fact, script, and asset lives here once.
+2. **A Claude Code / Cowork plugin marketplace** (`plugins/` + `.claude-plugin/marketplace.json`)
+   — each skill published as an installable plugin. Everything under `plugins/` is **generated**
+   from `skills/`; never hand-edit it.
+3. **`genservice/`** — an Express service that renders the canonical generators over HTTP, used
+   by n8n. It runs the *same* generator code the skills ship — no copies.
+
+## Layout
+
+| Path | What it is | Edited by hand? |
+|---|---|---|
+| `skills/<name>/` | Canonical skill: `SKILL.md`, scripts, `assets/`, `references/`. **Single source.** | ✅ yes |
+| `.claude-plugin/marketplace.json` | Curated plugin catalog (display metadata per skill). | ✅ yes |
+| `plugins/<name>/` | Generated marketplace wrapper (real skill copy + `plugin.json` + agent). | ❌ generated |
+| `.claude/skills/<name>` | Symlink → `skills/<name>`, so the skills are active inside this repo. | ❌ generated |
+| `genservice/` | `nvg-genservice` Express app. Generators are pulled from `skills/` at build. | ✅ `server.js` only |
+| `scripts/` | Repo tooling (`build-plugins.mjs`, `sync-brand.mjs`). | ✅ yes |
+| `workflows/` | n8n design docs + export notes (the workflows run live in n8n). | ✅ yes |
 
 ## Install as a Claude Code marketplace
-Add the marketplace once, then install any skill as a plugin:
 
 ```shell
-# 1. Register the marketplace (any Claude Code session)
+# 1. Register the marketplace (must be a git/GitHub source so the plugin copies come along)
 /plugin marketplace add shiv-nova/workflows
 
 # 2. Install the skills you want (plugin@marketplace)
@@ -21,69 +36,83 @@ Add the marketplace once, then install any skill as a plugin:
 /plugin install cfo-advisor@novagentica-skills
 
 # Browse / manage
-/plugin                              # interactive browser
-/plugin marketplace update novagentica-skills   # pull catalog changes
+/plugin
+/plugin marketplace update novagentica-skills
 ```
 
 Installed skills are namespaced by plugin, e.g. `/novagentica-presentation:novagentica-presentation`,
-and Claude also invokes them automatically when a task matches.
+and Claude also invokes them automatically when a task matches. Each plugin ships **both a skill
+and a matching agent**, so it surfaces in skill-based clients *and* in **Cowork** (which lists
+plugin *agents*).
 
 ### Available plugins (`@novagentica-skills`)
 | Plugin | What it does |
 |---|---|
-| `cfo-advisor` | Startup-CFO financial frameworks: models, unit economics, fundraising, board packs. |
-| `investor-document-audit-skill` | Red-team audit of investor decks, models, and memos. |
+| `cfo-advisor` | Startup-CFO frameworks: models, unit economics, fundraising, board packs. |
+| `investor-document-audit-skill` | Red-team audit of investor decks, models, memos (+ brand check). |
 | `novagentica-decision` | Internal strategic decisions → branded Decision Memo (DOCX + MD). |
 | `novagentica-delivery` | Delivery artefacts: Gantt, timeline, SoW, RACI, governance. |
 | `novagentica-engagement-pack` | Transcript + fit deck → full engagement artefact suite. |
 | `novagentica-order-form` | Subscription + professional-services order forms under the MSA. |
 | `novagentica-presales-solution-design` | Discovery → proposal → plan pipeline (order-form handoff). |
 | `novagentica-presentation` | Novagentica-branded `.pptx` decks. |
-| `novagentica-solution-design` | Discovery → proposal → plan pipeline (contracts handoff). |
 | `novagentica-use-case-library` | By-vertical, reusable 3-slide use-case tiles. |
 
-### How the packaging works
+## How packaging works — and how to change it
 
-> **IMPORTANT (changed in 1.1.1):** plugins are now **self-contained** — `plugins/<name>/skills/<name>/` holds **real copies** of each skill, NOT a symlink. Cowork installs a plugin by copying its `source` folder as-is and does **not** dereference a symlink that escapes that folder (`../../../skills/<name>`) — which left every installed skill empty. `skills/` stays the canonical source; regenerate `plugins/` as real (dereferenced) copies — never symlinks — and bump the patch version. Run `fix-cowork-loading.sh` to regenerate + validate.
-- `.claude-plugin/marketplace.json` (repo root) is the catalog; each entry's `source` points at
-  `./plugins/<name>`.
-- Each `plugins/<name>/` is a thin plugin wrapper: a `.claude-plugin/plugin.json` manifest, a
-  `skills/<name>` **symlink back to the canonical `skills/<name>/`**, and an `agents/<name>.md`
-  subagent. The symlink gives the universally-supported `skills/<name>/SKILL.md` layout while
-  keeping `skills/` the single source of truth (no files duplicated or moved).
-- The `agents/<name>.md` subagent **preloads its plugin's skill** (`skills:` frontmatter) and
-  delegates to it, so the skill stays the single source of truth. Agents are what **Cowork** lists
-  and runs — a skill-only plugin shows no agents there, which is why each plugin ships one.
-- On a Git install, Claude Code copies each plugin into its cache and **dereferences** that symlink
-  (its target is inside the marketplace), so the real skill content lands in the cache. This is why
-  the marketplace must be added via GitHub / a git URL, not a raw link to `marketplace.json`.
-- Each skill directory is self-contained (its scripts/assets live inside it).
-- Plugins are pinned to an explicit `version` (currently **1.1.0**) in both `plugin.json` and the
-  marketplace entry. Clients only pull new content when that string changes, so **bump the version
-  on every change** (in both places, kept in sync by the generator) — otherwise installed users
-  stay on their cached copy. (To trade the clean version display for automatic per-commit updates,
-  remove `version` everywhere and it falls back to the git commit SHA.)
+`skills/` is the only place you edit. `plugins/` is a **build artifact** that is committed
+(the git marketplace needs it present in the repo — a `.gitignore`'d `plugins/` would install
+empty). One command regenerates it:
 
-> Why the wrapper instead of a bare `SKILL.md` per skill: a single `SKILL.md` at a plugin root is
-> only recognised by Claude Code **v2.1.142+**, so older clients (and some plugin browsers) show
-> "no skills". The nested `skills/<name>/SKILL.md` layout works everywhere.
+```bash
+node scripts/build-plugins.mjs            # bump patch, regenerate plugins/, refresh symlinks
+node scripts/build-plugins.mjs --version=1.2.0   # set an explicit version
+node scripts/build-plugins.mjs --no-bump  # regenerate without touching versions
+```
 
-> The `.claude/skills/*` symlinks are unrelated to the marketplace — they make these skills active
-> for anyone working *inside this repo*; the marketplace is for installing them *elsewhere*.
+`build-plugins.mjs`, for every entry in `marketplace.json`:
+- refreshes `plugins/<name>/skills/<name>/` as a **real (dereferenced) copy** of `skills/<name>` —
+  never a symlink. (Cowork copies a plugin's `source` folder as-is and does not follow a symlink
+  that escapes it, which used to leave installed skills empty.)
+- writes `plugins/<name>/.claude-plugin/plugin.json` from the catalog fields,
+- keeps a hand-tuned `agents/<name>.md` if present, generates a default if missing,
+- **bumps the version** in the catalog and every `plugin.json` (kept in sync), so clients actually
+  pull the change — a stale version string leaves installed users on their cached copy,
+- prunes any `plugins/<name>` / `.claude/skills/<name>` not in the catalog.
 
-## Layout
-- `skills/` — the Claude.ai skills (`/mnt/skills/user/...`), the canonical source for each skill.
-  Each is a thin generator layer over a shared `lib/` with a `CONVENTIONS.md` standard.
-- `plugins/<name>/` — marketplace plugin wrappers; each symlinks `skills/<name>` back to the
-  canonical skill and ships an `agents/<name>.md` subagent. Nothing here is hand-edited —
-  regenerate it if you add a skill.
-- `.claude-plugin/marketplace.json` — the plugin marketplace catalog (lists all skills as plugins).
-- `genservice/` — `nvg-genservice`, the Express service that wraps the canonical generator
-  scripts as HTTP endpoints. Deployed to AWS App Runner (Frankfurt, eu-central-1).
-- `workflows/` — n8n design docs + export notes. The workflows run live in n8n (which has its
-  own versioning); see `workflows/README.md`.
+**To add a skill:** create `skills/<name>/`, add a catalog entry to `marketplace.json`, run
+`build-plugins.mjs`, commit. **To remove one:** delete its `skills/<name>/` and catalog entry, run
+the script (it prunes the rest), commit.
 
-## Generator service — current state
+> The nested `skills/<name>/SKILL.md` layout inside each plugin (rather than a bare `SKILL.md` at
+> the plugin root) is used because a root `SKILL.md` is only recognised by Claude Code v2.1.142+.
+> The nested layout works everywhere.
+
+### Brand is one file, everywhere
+
+Every skill's `assets/brand.md` is the same canonical digest (cream `#FAFBF6`, ink `#0E0E0C`,
+crimson `#CC0D2C`, Inter + Georgia). Keep them identical with:
+
+```bash
+node scripts/sync-brand.mjs           # copy the canonical digest into every skill's brand.md
+node scripts/sync-brand.mjs --check   # CI: exit 1 if any brand.md has drifted
+```
+
+Canonical source: `skills/novagentica-engagement-pack/assets/brand.md`. The order-form skill also
+**inlines** these tokens in `nvg_helpers.js` (so it installs standalone); those values must mirror
+`lib/brand.js` — treat `lib/brand.js` as canonical.
+
+## Generator service (`genservice/`)
+
+`nvg-genservice` is a thin HTTP wrapper: it writes the brief to a temp dir, runs the **canonical
+generator script from `skills/`**, and streams the produced file back. It re-implements no
+rendering — one source of truth; n8n orchestrates, this renders.
+
+The generator scripts are **not copied** into `genservice/`. They are pulled straight from `skills/`:
+- **Docker** COPYs them from `skills/` (so the image is built from the **repo root**).
+- **Local dev** populates gitignored `genservice/generators` + `genservice/orderforms` from `skills/`
+  via `genservice/sync.js`, run automatically by `npm start`'s `prestart` hook.
+
 Live: `https://n5mf8kbiuj.eu-central-1.awsapprunner.com`
 
 | Endpoint | Status |
@@ -96,12 +125,11 @@ Live: `https://n5mf8kbiuj.eu-central-1.awsapprunner.com`
 | `POST /generate/orderform/ps` | live |
 | `/generate/proposal`, `/addendum`, `/gantt`, `/execsummary`, `/proposaldeck` | pending |
 
-Auth: `Authorization: Bearer $NVG_TOKEN` (set as an App Runner env var; never commit it).
+Auth: `Authorization: Bearer $NVG_TOKEN` (App Runner env var; never commit it).
 
-### Redeploy
+### Redeploy (build from the repo root — generators come from `skills/`)
 ```bash
-cd genservice
-docker build --platform linux/amd64 -t nvg-genservice .
+docker build --platform linux/amd64 -f genservice/Dockerfile -t nvg-genservice .
 ECR=845041270643.dkr.ecr.eu-central-1.amazonaws.com
 aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $ECR
 docker tag nvg-genservice:latest $ECR/nvg-genservice:latest
@@ -114,18 +142,18 @@ aws apprunner start-deployment --service-arn $ARN --region eu-central-1
 ## Skills — current state
 | Skill | State |
 |---|---|
-| `novagentica-engagement-pack` | **v2 foundation** (shared `lib/` + `reconcile()`, selftest 19/19). `build_sow` converted to lib/preflight. `build_proposal`, `build_execsummary`, `build_proposaldeck`, `build_gantt` still inline — pending conversion (same 6-edit recipe). |
-| `novagentica-order-form` | Done — two-form generators (`build_of_subscription.js` + `build_of_ps.js`). |
-| `novagentica-delivery` | SoW/Gantt/RACI. Open: single-A on "Go-live decision". |
+| `novagentica-engagement-pack` | **v2 foundation** (shared `lib/` + `reconcile()`, selftest). `build_sow` on lib/preflight; `build_proposal`, `build_execsummary`, `build_proposaldeck`, `build_gantt` still inline — pending conversion. |
+| `novagentica-order-form` | Two-form generators (`build_of_subscription.js` + `build_of_ps.js`). Brand tokens mirror `lib/brand.js`. |
+| `novagentica-delivery` | SoW / Gantt / RACI / governance. |
 | `novagentica-presentation` | Canonical PPTX brand layer (cream/crimson, Inter+Georgia). |
-| `novagentica-use-case-library` | 3-slide tile generator; library DB `3a0c6e0a-…` (canonical). |
-| `novagentica-presales-solution-design` / `-solution-design` | discovery→proposal pipeline. |
-| `novagentica-decision`, `cfo-advisor`, `investor-document-audit-skill` | internal tooling. |
+| `novagentica-use-case-library` | 3-slide tile generator. |
+| `novagentica-presales-solution-design` | Discovery → proposal → plan pipeline (front door; hands off to order-form + delivery). |
+| `novagentica-decision`, `cfo-advisor`, `investor-document-audit-skill` | Internal tooling. |
 
-**Commercial source of truth:** `engagement-pack/.../lib/commercials.js` `reconcile()` — 19 selftest
-cases. Every skill imports from `lib/`; nothing inlines commercials.
+**Commercial source of truth:** `novagentica-engagement-pack/.../lib/commercials.js` `reconcile()`.
+Every skill imports from `lib/`; nothing inlines commercials.
 
 ## Conventions
-- Prompt, don't fabricate (preflight exits 2 on missing critical inputs; gaps render `[TBC]`).
+- Prompt, don't fabricate (preflight exits non-zero on missing critical inputs; gaps render `[TBC]`).
 - Swiss law, CHF, Art. 100 CO carve-outs, EU AI Act + Swiss FADP dual-framework.
-- Brand: cream `#FAFBF6`, crimson `#CC0D2C`, Inter (headings) + Georgia (body), lowercase wordmark.
+- Brand: cream `#FAFBF6`, ink `#0E0E0C`, crimson `#CC0D2C`, Inter (headings) + Georgia (body), lowercase wordmark.
